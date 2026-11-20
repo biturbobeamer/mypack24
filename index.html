@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="de-DE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyPack24</title>
+<meta name="description" content="MyPack24: Pakete von Haustür zu Haustür, mitgenommen von Leuten, die sowieso fahren. Vorschau, Start in Vorbereitung.">
+<style>@font-face{font-family:"Figtree";font-style:normal;font-weight:400;font-display:swap;src:url("figtree-latin-400-normal.woff2") format("woff2")}@font-face{font-family:"Figtree";font-style:normal;font-weight:500;font-display:swap;src:url("figtree-latin-500-normal.woff2") format("woff2")}@font-face{font-family:"Figtree";font-style:normal;font-weight:600;font-display:swap;src:url("figtree-latin-600-normal.woff2") format("woff2")}@font-face{font-family:"Figtree";font-style:normal;font-weight:700;font-display:swap;src:url("figtree-latin-700-normal.woff2") format("woff2")}</style>
+<style>
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+</style>
+<style>
+/* Direction
+   Product: a marketplace where people who are driving anyway carry parcels door to door, for senders and drivers in Germany.
+   Character: direct, dependable, on the road.
+   World: the Autobahn at dusk, blue route signs, a map on the passenger seat.
+   Moments: the full-bleed route map in the hero and the phone in the app preview.
+   Signature: the route marker, a round A and a square B joined by a line. */
+:root{
+  --paper:#FFFFFF; --surface:#FFFFFF; --soft:#F4F4F5; --ink:#171717; --ink2:#525252; --muted:#737373; --line:rgba(23,23,23,.1);
+  --route:#171717; --route-ink:#FFFFFF; --route-soft:#F4F4F5;
+  --accent:#1F56B4; --accent-soft:#E9EFF9;
+  --signal:#16794A; --signal-soft:#E7F3EC; --danger:#C2362B; --danger-soft:#FBE8E6;
+  --sea:#E8EDF1; --land:#FFFFFF; --land-out:#F5F5F5; --water:#C8D5DF; --road:#C4C4C4; --road2:#DEDEDE; --urban:#EFEFEF; --mapline:rgba(23,23,23,.14);
+  --font-display:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --radius:12px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141415; --surface:#19191B; --soft:#232325; --ink:#EDEDED; --ink2:#A1A1A6; --muted:#85858B; --line:rgba(237,237,237,.08);
+    --route:#EDEDED; --route-ink:#141415; --route-soft:#232325;
+    --accent:#7FA6EE; --accent-soft:#1C2433;
+    --signal:#4CC38A; --signal-soft:#15261D; --danger:#E5484D; --danger-soft:#2C1517;
+    --sea:#0C0E11; --land:#1E1E21; --land-out:#141416; --water:#35556B; --road:#77777D; --road2:#4A4A4F; --urban:#2C2C30; --mapline:rgba(237,237,237,.22); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141415; --surface:#19191B; --soft:#232325; --ink:#EDEDED; --ink2:#A1A1A6; --muted:#85858B; --line:rgba(237,237,237,.08);
+  --route:#EDEDED; --route-ink:#141415; --route-soft:#232325;
+  --accent:#7FA6EE; --accent-soft:#1C2433;
+  --signal:#4CC38A; --signal-soft:#15261D; --danger:#E5484D; --danger-soft:#2C1517;
+  --sea:#0C0E11; --land:#1E1E21; --land-out:#141416; --water:#35556B; --road:#77777D; --road2:#4A4A4F; --urban:#2C2C30; --mapline:rgba(237,237,237,.22); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
+h1{font-size:clamp(36px,4.4vw,56px);line-height:1.05;font-weight:500;letter-spacing:-.03em}
+h2{font-size:clamp(28px,3vw,40px);line-height:1.1;font-weight:500;letter-spacing:-.02em}
+h3{font-size:18px;line-height:1.3;font-weight:600;letter-spacing:0}
+p{margin:0}
+a{color:var(--ink)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+
+.demo-bar{background:var(--soft);color:var(--muted);font-size:13px;padding:6px 0}
+.demo-bar .wrap{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.demo-bar a{color:var(--ink)}
+header.top{position:sticky;top:0;z-index:1200;background:#171717;color:#fff}
+header.top .wrap{display:flex;align-items:center;gap:24px;height:60px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:18px;text-decoration:none;color:#fff}
+nav.main{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav.main a{padding:8px 12px;border-radius:8px;text-decoration:none;color:#D4D4D4;font-weight:500;font-size:15px;transition:background-color 150ms var(--ease),color 150ms var(--ease)}
+nav.main a:hover{color:#fff;background:rgba(255,255,255,.08)}
+nav.main a[aria-current="page"]{background:rgba(255,255,255,.12);color:#fff}
+header.top :focus-visible{outline-color:var(--paper)}
+nav.main a .count[hidden]{display:none}
+nav.main a .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--signal);color:#fff;font-size:12px;text-align:center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;min-height:44px;padding:12px 20px;font-weight:500;cursor:pointer;text-decoration:none;background:var(--ink);color:var(--paper);transition:transform 120ms var(--ease),background-color 150ms var(--ease)}
+.btn:active{transform:scale(.98)}
+.btn.secondary{background:var(--soft);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.danger{background:transparent;color:var(--danger);box-shadow:inset 0 0 0 1.5px var(--danger)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+label.f{display:grid;gap:4px;font-weight:600;font-size:14px}
+.f input,.f select{width:100%;min-width:0;padding:11px 12px;border:2px solid transparent;border-radius:10px;background:var(--soft);font-weight:500;font-size:16px}
+.f input:focus,.f select:focus{border-color:var(--ink);outline:none}
+input[type=range]{accent-color:var(--route);padding:0;border:0;background:none}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.seg{display:flex;border:0;border-radius:10px;overflow:hidden;background:var(--soft);padding:3px;gap:3px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{flex:1;text-align:center;padding:8px 6px;cursor:pointer;font-weight:600;font-size:14px;border-radius:8px;line-height:1.2}
+.seg label small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.seg input:checked+label{background:var(--route);color:var(--route-ink)}
+.seg input:checked+label small{color:inherit;opacity:.85}
+.seg input:focus-visible+label{outline:3px solid var(--signal);outline-offset:-3px}
+
+.fieldset-title{font-weight:600;font-size:14px;margin-bottom:4px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+.view{display:none}
+.view.active{display:block}
+
+/* ---- map ---- */
+.mapbox{position:relative;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--sea)}
+.mapbox .lmap{height:380px;width:100%}
+.mapbox .map-tools{position:absolute;right:12px;top:12px;z-index:800;display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 70px)}
+.map-tools .seg{box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.map-tools .seg{background:var(--surface)}
+.map-tools .seg label{padding:6px 10px;font-size:13px;white-space:nowrap}
+.map-hint{background:var(--surface);border-radius:8px;padding:6px 10px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.map-fallback{padding:24px;color:var(--muted)}
+.leaflet-container{background:var(--sea);font-family:var(--font-body)}
+.leaflet-bar a,.leaflet-bar a:hover{background:var(--surface);color:var(--ink);border-bottom-color:var(--line)}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--surface) 85%,transparent)!important;color:var(--muted)!important;font-size:11px}
+.leaflet-control-attribution a{color:var(--muted)!important}
+.g-nb{fill:var(--land-out);fill-opacity:1;stroke:var(--mapline);stroke-width:1}
+.g-de{fill:var(--land);fill-opacity:1;stroke:var(--muted);stroke-width:1.2}
+.g-state{fill:none;stroke:var(--mapline);stroke-width:1;stroke-dasharray:3 4}
+.g-water{fill:var(--water);fill-opacity:.9;stroke:none}
+.g-river{fill:none;stroke:var(--water);stroke-width:1.5}
+.g-urban{fill:var(--urban);fill-opacity:1;stroke:none}
+.g-hw{fill:none;stroke:var(--road);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.g-hw2{fill:none;stroke:var(--road2);stroke-width:1.2;stroke-linecap:round}
+.g-city{fill:var(--surface);fill-opacity:1;stroke:var(--ink);stroke-width:1.5;cursor:pointer}
+.g-city.on{fill:var(--ink);stroke:var(--ink)}
+.g-city.match{fill:var(--accent);stroke:var(--accent)}
+.r-parcel{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.r-done{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.r-courier{fill:none;stroke:var(--muted);stroke-width:2.5;stroke-dasharray:6 7;opacity:.75;cursor:pointer}
+.r-courier.hl{stroke:var(--ink);stroke-width:4;opacity:1;stroke-dasharray:none}
+.leaflet-tooltip.city-lbl{background:transparent;border:0;box-shadow:none;color:var(--ink);font-weight:600;font-size:12px;padding:0 0 0 2px;text-shadow:0 0 3px var(--land),0 0 3px var(--land),0 0 2px var(--land)}
+.leaflet-tooltip.city-lbl::before{display:none}
+.lmap:not(.z7) .leaflet-tooltip.city-lbl.small{display:none}
+.leaflet-tooltip.city-lbl.small{font-weight:500;font-size:11px;color:var(--ink2)}
+.leaflet-tooltip{background:var(--surface);color:var(--ink);border-color:var(--line);font-family:var(--font-body)}
+.leaflet-tooltip-top::before{border-top-color:var(--surface)}
+.pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--paper);font-weight:700;font-family:var(--font-body);font-size:15px;border:2px solid var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:grab}
+.pin.b{background:var(--paper);color:var(--ink);border-color:var(--ink);border-radius:6px}
+.pin.c{background:var(--accent);color:#fff;width:24px;height:24px;font-size:13px;cursor:default;position:relative}
+.pin.c::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:3px solid var(--accent);opacity:.5;animation:ring 1.8s infinite}
+@keyframes ring{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.4);opacity:0}}
+.leaflet-div-icon{background:transparent;border:0}
+.pin-photo{width:40px;height:40px;border-radius:50%;border:3px solid var(--accent);background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.25);display:block}
+
+/* hero */
+.hero{padding:48px 0 48px}
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
+.hero h1 .line{display:block}
+.hero .lead{font-size:20px;max-width:34em;margin:18px 0 24px;color:var(--muted)}
+.search-card{display:grid;gap:12px;max-width:520px}
+.live-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.live-card .head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.live-card .mapbox{border:0;border-radius:0}
+.live-card .mapbox .lmap{height:360px}
+.live-card .body{display:grid;grid-template-columns:1fr auto;gap:16px;padding:16px 18px;align-items:end;border-top:1px solid var(--line)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--soft);color:var(--ink2)}
+.pill.amber{background:var(--accent-soft);color:var(--accent)}
+.pill.red{background:var(--danger-soft);color:var(--danger)}
+.pill.grey{background:color-mix(in srgb,var(--line) 50%,transparent);color:var(--muted)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.pulse .dot{animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.pilot{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14px;color:var(--muted)}
+.ticket{position:relative;display:inline-grid;gap:2px;padding:12px 18px 12px 22px;border-radius:10px;background:var(--ink);color:var(--paper);min-width:150px}
+.ticket::before{content:"";position:absolute;left:8px;top:10px;bottom:10px;border-left:2px dashed color-mix(in srgb,var(--paper) 45%,transparent)}
+.ticket .t-label{font-size:12px;opacity:.75}
+.ticket .t-code{font-weight:700;font-size:40px;letter-spacing:.14em;line-height:1}
+.ticket.small .t-code{font-size:30px}
+
+section.block{padding:56px 0;border-top:1px solid var(--line)}
+.sec-head{display:grid;grid-template-columns:1fr 1.2fr;gap:32px;align-items:end;margin-bottom:28px}
+.sec-head p{color:var(--muted);font-size:18px;max-width:36em}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);counter-reset:s;border-top:2px solid var(--ink)}
+.steps li{counter-increment:s;padding:18px 20px 22px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:48px 1fr;gap:8px}
+.steps li::before{content:counter(s);font-family:var(--font-display);font-weight:800;font-size:34px;line-height:1;color:var(--route)}
+.steps h3{font-size:21px;margin-bottom:4px}
+.steps p{color:var(--muted);font-size:15px}
+.safety{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.safety ul{list-style:none;padding:0;margin:0;display:grid;gap:18px}
+.safety li{display:grid;grid-template-columns:28px 1fr;gap:12px}
+.safety li b{display:block}
+.safety li span{color:var(--muted);font-size:15px}
+.code-demo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.code-demo .who{font-size:14px;font-weight:600;margin-bottom:6px}
+.earn{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+.earn-out{font-family:var(--font-display);font-weight:800;font-size:60px;line-height:1;color:var(--route)}
+details{border-bottom:1px solid var(--line);padding:14px 0}
+details summary{cursor:pointer;font-weight:700;font-size:18px}
+details p{margin-top:8px;color:var(--muted);max-width:60em}
+footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;gap:24px;flex-wrap:wrap;justify-content:space-between}
+
+.page{padding:32px 0 64px}
+.page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.send-grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:24px;align-items:start}
+.send-grid .panel.form{position:sticky;top:84px;display:grid;gap:14px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 16px}
+.tabs button{border:1.5px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.tabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.offers{display:grid;gap:12px}
+.offer{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;transition:box-shadow .15s}
+.offer.best{border-color:var(--ink);border-width:2px}
+.offer.hl{box-shadow:0 0 0 2px var(--ink)}
+.avatar{width:48px;height:48px;border-radius:50%;display:block;object-fit:cover;background:var(--soft);flex:none}
+.avatar.sm{width:40px;height:40px}
+.avatar.lg{width:72px;height:72px}
+.offer .name{font-weight:600;font-size:17px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.offer .meta{color:var(--muted);font-size:14px}
+.offer .eta{font-weight:600;margin-top:4px}
+.offer .right{text-align:right;display:grid;gap:6px;justify-items:end}
+.price{font-weight:600;font-size:24px;line-height:1}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.verified{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:var(--signal)}
+.empty{padding:28px;border:1.5px dashed var(--line);border-radius:var(--radius);display:grid;gap:12px;justify-items:start}
+.results-top{display:grid;gap:14px;margin-bottom:6px}
+
+.modal{position:fixed;inset:0;background:rgba(5,15,15,.55);display:none;align-items:flex-start;justify-content:center;z-index:2000;padding:40px 16px;overflow:auto}
+.modal.open{display:flex}
+.modal .box{background:var(--surface);border-radius:14px;max-width:560px;width:100%;padding:24px;display:grid;gap:16px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:15px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600}
+table.sum{width:100%;border-collapse:collapse;font-size:15px}
+table.sum td{padding:6px 0;border-bottom:1px solid var(--line)}
+table.sum td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+table.sum tr.total td{font-weight:800;border-bottom:0;font-size:17px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{margin-top:3px;width:18px;height:18px;accent-color:var(--route)}
+
+.stepper{display:flex;list-style:none;padding:0;margin:0 0 20px;overflow-x:auto}
+.stepper li{flex:1;min-width:96px;padding:10px 8px 0 0;border-top:4px solid var(--line);font-size:13px;font-weight:600;color:var(--muted)}
+.stepper li.done{border-color:var(--ink);color:var(--ink)}
+.stepper li.now{border-color:var(--signal);color:var(--ink)}
+.order-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:20px;align-items:start}
+.order-map .lmap{height:440px}
+.trk{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap;background:var(--surface)}
+.speed{display:flex;gap:4px;align-items:center;font-size:14px;flex-wrap:wrap}
+.speed button{border:1.5px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 8px;font-weight:600;cursor:pointer;font-size:13px}
+.speed button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.speed label{display:flex;gap:6px;align-items:center;margin-left:8px}
+.progress{height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--accent);width:0}
+.summary{display:grid;gap:14px}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px;max-height:280px;overflow:auto}
+.log li{display:grid;grid-template-columns:52px 1fr;gap:8px}
+.log time{color:var(--muted);font-variant-numeric:tabular-nums}
+.phones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:24px}
+.phone{background:var(--surface);border:8px solid var(--ink);border-radius:34px;padding:14px 14px 18px;min-height:400px;display:flex;flex-direction:column;gap:12px}
+.phone .notch{width:90px;height:6px;border-radius:4px;background:var(--line);margin:0 auto 4px}
+.phone .who{display:flex;gap:10px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.phone .who b{display:block;line-height:1.2}
+.phone .who span{font-size:13px;color:var(--muted)}
+.phone{min-width:0}
+.phone .screen{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;flex:1}
+.phone .ticket{justify-self:start}
+.phone.off{opacity:.55}
+.phone h4{margin:0;font-size:17px;font-weight:700}
+.code-in{display:flex;gap:8px}
+.code-in input{flex:1;min-width:0;font-size:26px;font-weight:700;letter-spacing:.2em;text-align:center;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper)}
+.code-in input:focus{border-color:var(--route);outline:none}
+.msg-err{color:var(--danger);font-size:13px;font-weight:600}
+.msg-ok{color:var(--route);font-size:14px;font-weight:700;display:flex;gap:6px;align-items:center}
+.sms{background:var(--paper);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:14px}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:0;font-size:30px;line-height:1;cursor:pointer;color:var(--line);padding:2px}
+.stars button.on{color:var(--ink)}
+.stars button svg{width:26px;height:26px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:4px 10px;font-size:13px;font-weight:600;cursor:pointer}
+.chips button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.photo{width:100%;border-radius:8px;max-height:140px;object-fit:cover}
+.order-switch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+
+.courier-grid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:24px;align-items:start}
+.profile-card{display:grid;gap:12px}
+.profile-card .top{display:flex;gap:14px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{border-top:2px solid var(--ink);padding-top:6px}
+.stats b{display:block;font-size:24px;font-weight:700;line-height:1.1}
+.stats span{font-size:13px;color:var(--muted)}
+.route-list{display:grid;gap:10px}
+.route-item{display:grid;grid-template-columns:1fr auto;gap:8px;padding:14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+.courier-map .lmap{height:320px}
+
+.toasts{position:fixed;right:16px;bottom:16px;display:grid;gap:8px;z-index:2100;max-width:360px}
+.toast{background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:10px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);animation:tin .25s ease-out}
+.toast b{display:block}
+@keyframes tin{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+
+/* ---- landing (v4) ---- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.mk-a{width:10px;height:10px;border-radius:50%;background:var(--ink);flex:none}
+.mk-b{width:10px;height:10px;background:var(--ink);flex:none}
+.hero4{position:relative;height:calc(100vh - 92px);min-height:600px;max-height:860px;background:var(--sea)}
+.hero4-map{position:absolute;inset:0}
+.hero4-map .lmap{height:100%}
+.searchbar{position:absolute;z-index:900;top:24px;left:50%;transform:translateX(-50%);width:min(920px,calc(100% - 48px));display:flex;align-items:center;gap:4px;background:var(--surface);border-radius:16px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.12),0 0 0 1px var(--line)}
+.sb-f{flex:1;min-width:0;display:grid;gap:0;padding:6px 12px;border-radius:8px;cursor:pointer;transition:background-color 150ms var(--ease)}
+.sb-f:hover,.sb-f:focus-within{background:var(--soft)}
+.sb-l{font-size:12px;color:var(--muted);line-height:16px}
+.sb-in{display:flex;align-items:center;gap:8px}
+.sb-in select{flex:1;min-width:0;border:0;background:transparent;font-size:15px;font-weight:500;padding:2px 0;appearance:none;cursor:pointer}
+.sb-in select:focus{outline:none}
+.sb-div{width:1px;height:32px;background:var(--line);flex:none}
+.sb-go{flex:none}
+.hero4-card{position:absolute;z-index:900;left:24px;bottom:24px;width:min(440px,calc(100% - 48px));background:var(--surface);border-radius:16px;padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.12),0 0 0 1px var(--line);display:grid;gap:12px}
+.hero4-card .sub{font-size:17px;line-height:26px;color:var(--ink2)}
+.route-line{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);padding-top:12px;border-top:1px solid var(--line)}
+.route-line .bar{flex:0 0 24px;height:2px;background:var(--ink)}
+.route-line b{font-weight:600;color:var(--ink)}
+.route-line .cnt{margin-left:auto;color:var(--accent);font-weight:500;white-space:nowrap}
+.hero4-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.linkbtn{background:none;border:0;padding:8px 0;font-weight:500;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line)}
+
+section.block{padding:96px 0;border-top:0}
+section.block + section.block{padding-top:0}
+.sec-head2{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.sec-head2 p{color:var(--ink2);font-size:17px;line-height:26px;max-width:32em}
+
+.benefits{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:64px;align-items:start}
+.ben-intro{position:sticky;top:96px;display:grid;gap:16px}
+.ben-intro p{color:var(--ink2);font-size:17px;line-height:26px}
+.ben-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:40px}
+.ben-list li{display:grid;grid-template-columns:24px 1fr;gap:4px 16px;padding:24px 0;border-top:1px solid var(--line)}
+.ben-list svg{width:20px;height:20px;color:var(--ink);margin-top:2px}
+.ben-list p{grid-column:2;color:var(--ink2);font-size:15px;line-height:22px}
+.ben-list li.lead{grid-column:1 / -1}
+.ben-list li.lead h3{font-size:22px}
+.pay-row{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.pay-row span{font-size:13px;padding:4px 8px;border-radius:6px;background:var(--soft);color:var(--ink)}
+
+.show{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:64px;align-items:center;background:var(--soft);border-radius:20px;padding:48px}
+.show-steps{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.show-steps button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:24px 1fr;gap:4px 12px;width:100%;padding:12px 16px;border-radius:12px;cursor:pointer;transition:background-color 150ms var(--ease)}
+.show-steps button:hover{background:color-mix(in srgb,var(--surface) 60%,transparent)}
+.show-steps button:focus-visible{outline:2px solid var(--ink)}
+.show-steps .n{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.show-steps b{font-size:17px;font-weight:500;color:var(--ink2)}
+.show-steps .d{grid-column:2;color:var(--ink2);font-size:15px;line-height:22px;display:none}
+.show-steps button[aria-selected="true"]{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.show-steps button[aria-selected="true"] b,.show-steps button[aria-selected="true"] .n{color:var(--ink)}
+.show-steps button[aria-selected="true"] .d{display:block}
+.show-bar{grid-column:2;height:2px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:8px;display:none}
+.show-steps button[aria-selected="true"] .show-bar{display:block}
+.show-bar i{display:block;height:100%;width:0;background:var(--ink)}
+.show-stage{display:grid;justify-items:center;gap:20px}
+.device{width:300px;height:620px;border-radius:48px;background:#0d0d0d;padding:12px;box-shadow:0 24px 48px rgba(0,0,0,.16),0 0 0 1px rgba(0,0,0,.2)}
+.device-screen{width:100%;height:100%;border-radius:36px;overflow:hidden;background:#fff;color:#171717;position:relative}
+.island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:88px;height:24px;border-radius:12px;background:#0d0d0d;z-index:5}
+.track{display:flex;height:100%;transition:transform 450ms var(--ease)}
+.scr{flex:0 0 100%;height:100%;display:flex;flex-direction:column;font-size:13px;line-height:18px;position:relative;overflow:hidden}
+.sbar{display:flex;justify-content:space-between;padding:16px 24px 0;font-size:12px;font-weight:600;height:44px;position:relative;z-index:4}
+.scr-body{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.a-title{font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.02em}
+.a-sub{color:#525252;font-size:12px;line-height:16px}
+.a-field{display:flex;align-items:center;gap:12px;background:#F4F4F5;border-radius:10px;padding:8px 12px;font-weight:500}
+.a-field small{display:block;color:#737373;font-size:11px;font-weight:400;line-height:14px}
+.a-chips{display:flex;gap:4px;flex-wrap:wrap}
+.a-chip{padding:4px 12px;border-radius:8px;background:#F4F4F5;font-weight:500;font-size:12px;line-height:20px}
+.a-chip.on{background:#171717;color:#fff}
+.a-btn{margin-top:auto;background:#171717;color:#fff;border-radius:10px;padding:12px;text-align:center;font-weight:500}
+.a-btn.ghost{background:#F4F4F5;color:#171717;margin-top:0}
+.a-card{border:1px solid rgba(23,23,23,.1);border-radius:12px;padding:12px;display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center}
+.a-card.sel{box-shadow:0 0 0 2px #171717;border-color:transparent}
+.a-av{width:36px;height:36px;border-radius:50%;display:block;background:#EDEDED}
+.a-av.lg{width:56px;height:56px}
+.a-card b{font-size:13px;font-weight:600}
+.a-card .m{color:#525252;font-size:12px}
+.a-card .p{font-weight:600;font-size:14px;text-align:right}
+.a-tag{display:inline-block;font-size:11px;font-weight:500;line-height:16px;padding:0 6px;border-radius:4px;background:#E9EFF9;color:#1F56B4;margin-top:4px}
+.a-map{position:relative;height:148px;border-radius:12px;overflow:hidden;background:#E8EDF1;flex:none}
+.a-map svg{display:block;width:100%;height:100%}
+.a-map.full{position:absolute;inset:0;height:auto;border-radius:0}
+.a-float{position:relative;z-index:3;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:8px;display:grid;gap:4px}
+.a-float .a-field{background:transparent;padding:8px}
+.a-float .a-field + .a-field{border-top:1px solid rgba(23,23,23,.08);border-radius:0}
+.a-sugg{border-top:1px solid rgba(23,23,23,.08);padding-top:4px;display:grid}
+.a-sugg div{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px}
+.a-sugg div:first-child{background:#F4F4F5}
+.a-sugg svg{width:14px;height:14px;flex:none}
+.a-sugg b{display:block;font-weight:500;font-size:12px}
+.a-sugg small{display:block;font-size:11px;color:#737373}
+.a-sheet{position:relative;z-index:3;margin-top:auto;background:#fff;border-radius:16px;padding:12px 16px 16px;box-shadow:0 -4px 24px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:12px}
+.a-grab{width:36px;height:4px;border-radius:2px;background:#DDD;margin:0 auto}
+.a-row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.a-prog{height:4px;background:#EEE;border-radius:2px;overflow:hidden}
+.a-prog i{display:block;height:100%;width:62%;background:#1F56B4}
+.a-kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;margin:0}
+.a-kv dt{color:#737373}
+.a-kv dd{margin:0;font-weight:500;text-align:right}
+.a-big{font-size:32px;line-height:36px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.a-bars{display:flex;align-items:flex-end;gap:8px;height:88px}
+.a-bars i{flex:1;background:#D4D4D4;border-radius:4px 4px 0 0}
+.a-bars i.now{background:#1F56B4}
+.a-list{display:grid}
+.a-li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #EEE;font-size:12px;line-height:16px}
+.a-li span{color:#525252}
+.a-radio{width:16px;height:16px;border-radius:50%;border:1.5px solid #A3A3A3;flex:none}
+.a-radio.on{border:5px solid #171717}
+.a-toggle{width:36px;height:20px;border-radius:10px;background:#171717;position:relative;flex:none}
+.a-toggle::after{content:"";position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+.a-nav{display:flex;justify-content:space-around;border-top:1px solid #EEE;padding:8px 0 16px;font-size:11px;color:#8A8A8A;text-align:center;background:#fff;position:relative;z-index:3}
+.a-nav i{display:block;width:6px;height:6px;border-radius:50%;background:#D4D4D4;margin:4px auto}
+.a-nav .on{color:#171717}.a-nav .on i{background:#171717}
+.a-photo{display:grid;justify-items:center;gap:8px;padding:12px 0}
+.a-photo .ring{width:104px;height:104px;border-radius:50%;padding:4px;border:2px dashed #A3A3A3}
+.a-photo .ring img{width:100%;height:100%;border-radius:50%;display:block}
+.a-tips{display:grid;gap:4px;font-size:12px;color:#525252}
+.a-tips div{display:flex;gap:8px;align-items:center}
+.a-tips svg{width:14px;height:14px;color:#16794A;flex:none}
+.show-ctrl{display:flex;gap:12px;align-items:center}
+.show-ctrl button{border:0;background:var(--surface);color:var(--ink);width:40px;height:40px;border-radius:50%;cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px var(--line);transition:background-color 150ms var(--ease)}
+.show-ctrl button svg{width:16px;height:16px}
+.show-ctrl .dots{display:flex;gap:8px}
+.show-ctrl .dots i{width:6px;height:6px;border-radius:3px;background:color-mix(in srgb,var(--ink) 20%,transparent);transition:width 300ms var(--ease),background-color 300ms var(--ease)}
+.show-ctrl .dots i.on{background:var(--ink);width:20px}
+.show-caption{display:none;text-align:center;max-width:300px}
+
+.how3{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;counter-reset:h}
+.how3 li{counter-increment:h;display:grid;gap:12px;align-content:start;padding-top:24px;border-top:1px solid var(--ink)}
+.how3 li::before{content:counter(h);font-size:14px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.how3 p{color:var(--ink2);line-height:24px}
+
+.tiles{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px}
+.tile{border-radius:20px;padding:40px;display:grid;gap:16px;align-content:start;min-height:320px}
+.tile.dark{background:#171717;color:#EDEDED}
+.tile.dark p{color:#A1A1A6}
+.tile.dark .btn{background:#EDEDED;color:#171717}
+.tile.light{background:var(--soft)}
+.tile.light p{color:var(--ink2)}
+.tile h3{font-size:28px;line-height:34px;font-weight:500;letter-spacing:-.02em}
+.tile .btn{justify-self:start;margin-top:auto}
+.tile ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.tile li{display:flex;gap:12px;align-items:baseline}
+.tile li::before{content:"";width:8px;height:2px;background:currentColor;flex:none;transform:translateY(-4px)}
+
+.trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px}
+.trust div{display:grid;gap:8px;align-content:start}
+.trust svg{width:20px;height:20px}
+.trust p{color:var(--ink2);font-size:15px;line-height:22px}
+
+.faq3{max-width:820px}
+.faq3 details{border-bottom:1px solid var(--line);padding:20px 0}
+.faq3 summary{cursor:pointer;font-weight:500;font-size:17px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq3 summary::-webkit-details-marker{display:none}
+.faq3 summary::after{content:"+";font-weight:400;font-size:22px;line-height:1;color:var(--muted)}
+.faq3 details[open] summary::after{content:"−"}
+.faq3 p{margin-top:12px;color:var(--ink2);max-width:60em;line-height:24px}
+
+footer.f3{background:#171717;color:#EDEDED;padding:64px 0 40px;margin-top:40px;border:0}
+footer.f3 .cols{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:32px}
+footer.f3 a,footer.f3 .soon{color:#A1A1A6;text-decoration:none;display:block;padding:4px 0;font-size:15px}
+footer.f3 a:hover{color:#EDEDED}
+footer.f3 h4{margin:0 0 8px;font-size:15px;font-weight:500}
+footer.f3 .fine{margin-top:48px;font-size:13px;color:#85858B;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.store{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.store span{border:1px solid rgba(237,237,237,.16);border-radius:8px;padding:8px 12px;font-size:13px;color:#A1A1A6}
+
+/* address combobox */
+.combo{position:relative;flex:1;min-width:0}
+.combo input{width:100%}
+.combo-list{position:absolute;z-index:1500;left:0;right:0;top:calc(100% + 4px);min-width:280px;margin:0;padding:4px;list-style:none;background:var(--surface);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px var(--line);max-height:320px;overflow:auto}
+.combo-list li{display:flex;gap:12px;align-items:center;padding:8px 12px;border-radius:8px;cursor:pointer}
+.combo-list li[aria-selected="true"],.combo-list li:hover{background:var(--soft)}
+.combo-list svg{width:16px;height:16px;color:var(--muted);flex:none}
+.combo-list b{display:block;font-weight:500;font-size:15px;color:var(--ink)}
+.combo-list small{display:block;font-size:12px;color:var(--muted)}
+.combo-err{margin:4px 0 0;font-size:13px;color:var(--danger)}
+.sb-in .combo input{border:0;background:transparent;font-size:15px;font-weight:500;padding:2px 0;color:var(--ink)}
+.sb-in .combo input:focus{outline:none}
+.sb-in .combo input::placeholder,.f .combo input::placeholder{color:var(--muted);font-weight:400}
+.hidden-select{display:none}
+
+/* multi-stop plan */
+.plan{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.plan li{display:grid;grid-template-columns:48px 20px 1fr;gap:0 12px;align-items:start;position:relative;padding-bottom:16px}
+.plan li:last-child{padding-bottom:0}
+.plan li::before{content:"";position:absolute;left:69px;top:16px;bottom:-2px;width:2px;background:var(--line)}
+.plan li:last-child::before{display:none}
+.plan time{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;line-height:20px}
+.plan .mk{width:12px;height:12px;margin:4px 0 0 4px;background:var(--surface);border:2px solid var(--ink);position:relative;z-index:1}
+.plan .mk.pick{border-radius:50%;background:var(--ink)}
+.plan .mk.drop{background:var(--surface)}
+.plan .mk.end{border-radius:2px;background:var(--ink)}
+.plan .mk.start{border-radius:50%}
+.plan li.mine .mk{border-color:var(--accent)}
+.plan li.mine .mk.pick{background:var(--accent)}
+.plan b{font-weight:500;display:block;line-height:20px}
+.plan span{font-size:13px;color:var(--ink2)}
+.plan li.new b::after{content:"neu";margin-left:8px;font-size:11px;font-weight:500;padding:0 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.plan-sum{display:flex;gap:24px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px}
+.plan-sum b{display:block;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.plan-sum span{color:var(--ink2)}
+.budget{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px;width:120px}
+.budget i{display:block;height:100%;background:var(--ink)}
+.reqs{display:grid;gap:8px}
+.req{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.req b{font-weight:500}
+.req .m{font-size:13px;color:var(--ink2)}
+.req.off{opacity:.6}
+.req .earn{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.stopmk{display:grid;place-items:center;height:22px;padding:0 4px;white-space:nowrap;font-size:12px;font-weight:600;color:#fff;background:#171717;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);border-radius:11px}
+.stopmk.drop{border-radius:6px;background:#fff;color:#171717;border-color:#171717}
+.stopmk.mine{background:var(--accent)}
+.stopmk.drop.mine{background:#fff;color:var(--accent);border-color:var(--accent)}
+.offer .stopinfo{font-size:13px;color:var(--accent);margin-top:2px}
+
+/* booking: payment list, courier: photo + price */
+.pay-list{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pay-list label{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-top:1px solid var(--line);transition:background-color 150ms var(--ease)}
+.pay-list label:first-child{border-top:0}
+.pay-list label:hover{background:var(--soft)}
+.pay-list input{width:18px;height:18px;accent-color:var(--ink);margin:0}
+.pay-list b{font-weight:500}
+.pay-list small{margin-left:auto;color:var(--muted);font-size:13px}
+.pay-note{font-size:13px;color:var(--ink2);background:var(--soft);border-radius:8px;padding:8px 12px}
+.photo-req{display:grid;grid-template-columns:72px 1fr;gap:16px;align-items:center;padding:16px;border-radius:12px;background:var(--soft)}
+.photo-req .t{display:grid;gap:4px}
+.photo-req .t b{font-weight:600}
+.photo-req .t span{font-size:13px;color:var(--ink2);line-height:18px}
+.photo-req .acts{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap}
+.photo-req .acts label.btn{cursor:pointer}
+.photo-req input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+.photo-req.missing{box-shadow:0 0 0 2px var(--danger)}
+.price-in{display:flex;align-items:center;gap:8px}
+.price-in input{max-width:140px}
+.hint{font-size:13px;color:var(--ink2)}
+
+@media (max-width:980px){
+  .benefits,.show,.tiles{grid-template-columns:minmax(0,1fr)}
+  .ben-intro{position:static}
+  .show{padding:32px 20px}
+  .show-steps{display:none}
+  .show-caption{display:block}
+  .how3,.trust{grid-template-columns:repeat(2,minmax(0,1fr))}
+  footer.f3 .cols{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .hero4{height:auto;max-height:none;min-height:0;display:flex;flex-direction:column;background:var(--paper)}
+  .searchbar{position:static;transform:none;width:auto;margin:16px;flex-direction:column;align-items:stretch;order:-1}
+  .sb-div{width:auto;height:1px}
+  .hero4-map{position:relative;height:56vh;min-height:320px}
+  .hero4-card{position:static;width:auto;margin:16px;box-shadow:none;padding:0}
+  .ben-list{grid-template-columns:minmax(0,1fr)}
+  .how3,.trust{grid-template-columns:minmax(0,1fr)}
+  .tile{padding:28px;min-height:0}
+  .device{width:272px;height:564px}
+  section.block{padding:64px 0}
+}
+
+@media (max-width:980px){
+  .hero .wrap,.sec-head,.safety,.earn,.send-grid,.order-grid,.courier-grid{grid-template-columns:minmax(0,1fr)}
+  .send-grid .panel.form{position:static}
+  .steps{grid-template-columns:1fr 1fr}
+  .phones{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  header.top .wrap{height:auto;padding-top:10px;padding-bottom:10px;flex-wrap:wrap;gap:8px}
+  nav.main{margin-left:0}
+  nav.main a{padding:6px 8px}
+  .steps,.phones,.code-demo{grid-template-columns:minmax(0,1fr)}
+  .offer{grid-template-columns:44px 1fr}
+  .offer .right{grid-column:1 / -1;justify-items:stretch;text-align:left;grid-template-columns:1fr auto;align-items:center}
+  .avatar{width:44px;height:44px;font-size:17px}
+  .hero{padding-top:28px}
+  .mapbox .lmap,.order-map .lmap{height:320px}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar"><div class="wrap"><span><b>Vorschau.</b> MyPack24 ist in Vorbereitung. Buchungen, Zahlungen und Standorte auf dieser Seite sind eine Demo, es wird nichts belastet oder versendet.</span></div></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#start" aria-label="MyPack24 Startseite">
+      MyPack24
+    </a>
+    <nav class="main" aria-label="Hauptnavigation">
+      <a href="#senden" data-nav="senden">Senden</a>
+      <a href="#mitnehmen" data-nav="mitnehmen">Mitnehmen</a>
+      <a href="#auftrag" data-nav="auftrag">Meine Aufträge<span class="count" id="navCount" hidden>0</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ================= START ================= -->
+<div class="view" id="v-start">
+  <section class="hero4" aria-label="Strecke suchen">
+    <div class="hero4-map"><div class="lmap" id="heroMap" aria-label="Karte mit deiner Strecke"></div></div>
+    <form class="searchbar" id="heroForm" role="search">
+      <label class="sb-f" for="hf-addr"><span class="sb-l">Abholen</span><span class="sb-in"><span class="mk-a" aria-hidden="true"></span><input id="hf-addr" type="text" value="Ehrenstraße 12, Köln" placeholder="Adresse oder Ort"></span><select id="h-from" class="hidden-select" tabindex="-1" aria-hidden="true"></select></label>
+      <span class="sb-div" aria-hidden="true"></span>
+      <label class="sb-f" for="ht-addr"><span class="sb-l">Zustellen</span><span class="sb-in"><span class="mk-b" aria-hidden="true"></span><input id="ht-addr" type="text" value="Kettenhofweg 30, Frankfurt" placeholder="Adresse oder Ort"></span><select id="h-to" class="hidden-select" tabindex="-1" aria-hidden="true"></select></label>
+      <span class="sb-div" aria-hidden="true"></span>
+      <label class="sb-f" for="h-urg"><span class="sb-l">Ankommen</span><span class="sb-in"><select id="h-urg"><option value="express">In 3 Stunden</option><option value="heute" selected>Heute</option><option value="morgen">Bis morgen</option><option value="flexibel">In 3 Tagen</option></select></span></label>
+      <button class="btn sb-go" type="submit">Mitnehmer finden</button>
+    </form>
+    <div class="hero4-card">
+      <h1>Von Haustür zu Haustür, mit Leuten, die sowieso fahren</h1>
+      <p class="sub">Deine Sendung fährt heute noch mit. Du siehst live, wo sie ist, und zahlst, wie du willst.</p>
+      <div class="route-line" aria-live="polite"><span class="mk-a" aria-hidden="true"></span><span class="bar" aria-hidden="true"></span><span class="mk-b" aria-hidden="true"></span><b id="heroChipS">Köln → Frankfurt</b><span class="cnt num" id="heroChipT"></span></div>
+      <div class="hero4-actions"><button type="button" class="linkbtn" data-scroll="app-preview">So sieht die App aus</button></div>
+    </div>
+  </section>
+
+  <section class="block" id="vorteile">
+    <div class="wrap benefits">
+      <div class="ben-intro">
+        <h2>Warum MyPack24</h2>
+        <p>Jeden Tag fahren viele Autos mit freiem Kofferraum von A nach B. MyPack24 macht aus diesem Platz eine schnelle Zustellung, für dich und für die Person am Steuer.</p>
+        <a class="btn" href="#senden" style="justify-self:start">Sendung erfassen</a>
+      </div>
+      <ul class="ben-list">
+        <li class="lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><h3>Schnell und direkt von Haustür zu Haustür</h3><p>Abholung bei dir, Übergabe direkt beim Empfänger, ohne Umweg über ein Paketzentrum. Oft noch am selben Tag.</p></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><h3>Du legst den Preis fest</h3><p>Mitnehmer bestimmen ihren Preis selbst. Absender sehen alle Preise vor der Buchung und wählen.</p></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><path d="M3 12h18"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/></svg><h3>Fahrten, die sowieso stattfinden</h3><p>Pendeln, Wochenendfahrt, Dienstreise: Deine Sendung nutzt freien Platz in einem Auto, das ohnehin unterwegs ist. Abgabe auch unterwegs, nicht nur am Ziel der Fahrt.</p></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h12v11H2z"/><path d="M14 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><h3>Entlastet Paketdienste und Speditionen</h3><p>Eilige Einzelsendungen brauchen keinen eigenen Transporter und keine Extrafahrt.</p></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.6-2.4-2.9-5.5-3"/></svg><h3>Verdien dir was dazu</h3><p>Nimm unterwegs eine Sendung mit und bekomm 80 % des Preises, direkt nach der Zustellung.</p></li>
+        <li class="lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg><h3>Bezahl, wie du willst</h3><p>Fünf Zahlungsarten, auch bar bei der Übergabe.</p><div class="pay-row"><span>PayPal</span><span>Apple Pay</span><span>Google Pay</span><span>Kreditkarte</span><span>Bar</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" id="app-preview">
+    <div class="wrap">
+      <div class="sec-head2"><h2>So sieht die App aus</h2><p>Vorschau der MyPack24-App für iPhone und Android, vom Startbildschirm bis zur Auszahlung</p></div>
+      <div class="show" id="show">
+        <ol class="show-steps" role="tablist" aria-label="Bildschirme der App" id="showSteps"></ol>
+        <div class="show-stage">
+          <div class="device" aria-roledescription="Diashow" aria-label="App-Vorschau">
+            <div class="device-screen"><div class="island" aria-hidden="true"></div><div class="track" id="showTrack"></div></div>
+          </div>
+          <p class="show-caption" id="showCaption" aria-live="polite"></p>
+          <div class="show-ctrl">
+            <button type="button" id="showPrev" aria-label="Vorheriger Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <div class="dots" id="showDots" aria-hidden="true"></div>
+            <button type="button" id="showNext" aria-label="Nächster Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" id="showPlay" aria-label="Diashow anhalten"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head2"><h2>In drei Schritten verschickt</h2></div>
+      <ol class="how3">
+        <li><h3>Strecke eingeben</h3><p>Von wo nach wo, wie groß, wie dringend. Die Karte zeigt sofort, wer heute in deine Richtung fährt.</p></li>
+        <li><h3>Mitnehmer wählen</h3><p>Sortiert nach Ankunft und Bewertung. Profilbild, Preis und Abholzeit siehst du vor der Buchung.</p></li>
+        <li><h3>Live verfolgen</h3><p>Du und der Empfänger seht auf der Karte, wo die Sendung ist, bis sie an der Haustür ankommt.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap tiles">
+      <div class="tile dark">
+        <h3>Senden</h3>
+        <p>Für alles, was heute noch ankommen soll: Schlüssel, Dokumente, Geschenke oder der Kleinanzeigen-Kauf aus der Nachbarstadt.</p>
+        <ul><li>Abholung und Zustellung an der Haustür</li><li>Fester Preis vor der Buchung</li><li>Versichert bis 100 €</li></ul>
+        <a class="btn" href="#senden">Sendung erfassen</a>
+      </div>
+      <div class="tile light">
+        <h3>Mitnehmen und verdienen</h3>
+        <p>Du fährst sowieso? Leg deinen Preis fest, nimm unterwegs Sendungen mit und bekomm 80 % direkt nach der Zustellung.</p>
+        <ul><li>Keine Schichten, keine Pflicht</li><li>Route, Zeit, Umweg und Preis bestimmst du</li><li>Mehrere Sendungen pro Fahrt, Abgabe unterwegs</li></ul>
+        <a class="btn" href="#mitnehmen">Route anbieten</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head2"><h2>Sicher von A nach B</h2></div>
+      <div class="trust">
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h3"/></svg><h3>Geprüfte Mitnehmer</h3><p>Ausweis, Selfie und Profilbild vor der ersten Fahrt.</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><h3>Live-Standort</h3><p>Von der Abholung bis zur Haustür siehst du, wo deine Sendung ist.</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg><h3>Geld erst nach Zustellung</h3><p>Bei Online-Zahlung geht das Geld erst nach der bestätigten Übergabe an den Mitnehmer.</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><h3>Versichert</h3><p>Jede Sendung bis 100 € abgesichert, auf Wunsch bis 500 € Warenwert.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head2"><h2>Häufige Fragen</h2></div>
+      <div class="faq3">
+        <details><summary>Was darf ich verschicken?</summary><p>Briefe, Dokumente und Pakete bis 10 kg in Rucksackgröße. Verboten sind unter anderem Waffen, Drogen, verschreibungspflichtige Medikamente, Bargeld, Gefahrgut und Tiere. Der Mitnehmer darf die Sendung bei der Abholung ansehen und ablehnen.</p></details>
+        <details><summary>Wer legt den Preis fest?</summary><p>Der Mitnehmer, wenn er seine Route einträgt. Die App schlägt einen fairen Preis für Strecke und Größe vor, den er übernehmen oder ändern kann. Du siehst alle Preise vor der Buchung, Köln nach Frankfurt kostet für ein Paket in Schuhkartongröße am selben Tag meist 35 bis 40 €.</p></details>
+        <details><summary>Wie kann ich bezahlen?</summary><p>Mit PayPal, Apple Pay, Google Pay, Kreditkarte oder bar. Online-Zahlungen halten wir bis zur Zustellung zurück. Bar zahlst du bei der Abholung direkt an den Mitnehmer.</p></details>
+        <details><summary>Wie gebe ich die Adresse ein?</summary><p>Einfach eintippen, zum Beispiel „Ehrenstraße 12, Köln“. Nach wenigen Buchstaben schlägt die App passende Straßen und Orte vor.</p></details>
+        <details><summary>Muss die Sendung zum Ziel der Fahrt?</summary><p>Nein. Mitnehmer holen Sendungen überall auf ihrem Weg ab und geben sie unterwegs ab. Die App plant die Route mit allen Stopps und fügt neue Anfragen an der günstigsten Stelle ein, ohne dass der Umweg zu groß wird oder andere Sendungen später ankommen.</p></details>
+        <details><summary>Warum brauche ich ein Profilbild?</summary><p>Damit ihr euch an der Haustür erkennt. Mitnehmer laden vor der ersten Fahrt ein Foto hoch, auf dem das Gesicht gut zu sehen ist.</p></details>
+        <details><summary>Muss ich als Mitnehmer meine Einnahmen versteuern?</summary><p>Ja, Einnahmen sind grundsätzlich steuerpflichtig. Plattformen wie MyPack24 melden sie jährlich an das Bundeszentralamt für Steuern. Für Details frag deine Steuerberatung.</p></details>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= SEND ================= -->
+<div class="view" id="v-senden">
+  <div class="wrap page">
+    <div class="page-head"><h2>Sendung erfassen</h2><p class="muted">Sortiert nach schnellster und zuverlässigster Lösung</p></div>
+    <div class="send-grid">
+      <form class="panel form" id="sendForm">
+        <label class="f" for="s-faddr">Abholadresse<input id="s-faddr" type="text" value="Ehrenstraße 12, Köln" placeholder="Straße, Hausnummer, Ort"></label>
+        <label class="f" for="s-taddr">Zieladresse<input id="s-taddr" type="text" value="Kettenhofweg 30, Frankfurt" placeholder="Straße, Hausnummer, Ort"></label>
+        <select id="s-from" class="hidden-select" tabindex="-1" aria-hidden="true"></select><select id="s-to" class="hidden-select" tabindex="-1" aria-hidden="true"></select>
+        <div>
+          <div class="fieldset-title" id="s-size-l">Größe</div>
+          <div class="seg" role="radiogroup" aria-labelledby="s-size-l" id="s-size"></div>
+        </div>
+        <div>
+          <div class="fieldset-title" id="s-urg-l">Dringlichkeit</div>
+          <div class="seg urgency" role="radiogroup" aria-labelledby="s-urg-l" id="s-urg"></div>
+        </div>
+        <div class="row2">
+          <label class="f" for="s-weight">Gewicht (kg)<input id="s-weight" type="number" min="0.1" max="10" step="0.1" value="1.5"></label>
+          <label class="f" for="s-value">Warenwert (€)<input id="s-value" type="number" min="0" max="500" step="10" value="80"></label>
+        </div>
+        <label class="f" for="s-content">Inhalt<select id="s-content"><option>Dokumente</option><option>Schlüssel</option><option selected>Kleidung, Geschenk</option><option>Elektronik</option><option>Ersatzteil, Werkzeug</option><option>Kleinanzeigen-Kauf</option><option>Sonstiges</option></select></label>
+        <div class="row2">
+          <label class="f" for="s-rname">Empfänger<input id="s-rname" type="text" value="Anna Keller" autocomplete="off"></label>
+          <label class="f" for="s-rphone">Handy Empfänger<input id="s-rphone" type="tel" value="0151 23456789" autocomplete="off"></label>
+        </div>
+        <p class="small muted" id="weightHint"></p>
+        <button class="btn" type="submit">Vorschläge aktualisieren</button>
+      </form>
+      <div>
+        <div class="results-top">
+          <div class="mapbox">
+            <div class="lmap" id="sendMap"></div>
+            <div class="map-tools">
+              <div class="seg" role="radiogroup" aria-label="Klick auf die Karte setzt">
+                <input type="radio" name="pickmode" id="pm-from" value="from" checked><label for="pm-from">Klick setzt A</label>
+                <input type="radio" name="pickmode" id="pm-to" value="to"><label for="pm-to">Klick setzt B</label>
+              </div>
+            </div>
+          </div>
+          <p class="small muted">Stadt anklicken oder A und B verschieben. Gestrichelt: Routen der Mitnehmer, fahr mit der Maus über einen Vorschlag.</p>
+          <div id="resultsHead"></div>
+        </div>
+        <div class="tabs" id="sortTabs" role="group" aria-label="Sortierung">
+          <button type="button" data-sort="best" aria-pressed="true">Beste Wahl</button>
+          <button type="button" data-sort="fast" aria-pressed="false">Am schnellsten</button>
+          <button type="button" data-sort="reliable" aria-pressed="false">Am zuverlässigsten</button>
+          <button type="button" data-sort="cheap" aria-pressed="false">Günstigste</button>
+        </div>
+        <div class="offers" id="offers"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= COURIER ================= -->
+<div class="view" id="v-mitnehmen">
+  <div class="wrap page">
+    <div class="page-head"><h2>Route anbieten</h2><p class="muted">Dein Profil erscheint bei passenden Sendungen</p></div>
+    <div class="courier-grid">
+      <form class="panel" id="routeForm" style="display:grid;gap:14px">
+        <label class="f" for="r-name">Dein Vorname und Initial<input id="r-name" type="text" value="Max S." autocomplete="off"></label>
+        <div class="photo-req" id="photoReq">
+          <img class="avatar lg" id="photoPrev" src="" alt="Beispiel für ein Profilbild">
+          <div class="t"><b id="photoTitle">Profilbild hinzufügen</b><span>Pflicht vor der ersten Fahrt, damit man dich an der Haustür erkennt. Gesicht gut sichtbar, ohne Sonnenbrille, ruhiger Hintergrund.</span></div>
+          <div class="acts"><label class="btn secondary" for="photoUp">Foto hochladen</label><input id="photoUp" type="file" accept="image/*"><button type="button" class="btn secondary" id="photoDemo">Beispielbild verwenden</button></div>
+        </div>
+        <div class="row2">
+          <label class="f" for="rf-addr">Start<input id="rf-addr" type="text" value="Köln" placeholder="Adresse oder Ort"><select id="r-from" class="hidden-select" tabindex="-1" aria-hidden="true"></select></label>
+          <label class="f" for="rt-addr">Ziel<input id="rt-addr" type="text" value="Frankfurt" placeholder="Adresse oder Ort"><select id="r-to" class="hidden-select" tabindex="-1" aria-hidden="true"></select></label>
+        </div>
+        <div class="row2">
+          <label class="f" for="r-dep">Abfahrt<input id="r-dep" type="datetime-local"></label>
+          <label class="f" for="r-arr">Spätestens da<input id="r-arr" type="datetime-local"></label>
+        </div>
+        <div>
+          <div class="fieldset-title" id="r-veh-l">Unterwegs mit</div>
+          <div class="seg" role="radiogroup" aria-labelledby="r-veh-l" id="r-veh"></div>
+        </div>
+        <div>
+          <div class="fieldset-title" id="r-space-l">Platz für</div>
+          <div class="seg" role="radiogroup" aria-labelledby="r-space-l" id="r-space"></div>
+        </div>
+        <label class="f" for="r-detour">Maximaler Umweg: <span id="r-detour-out" class="num">15 km</span><input id="r-detour" type="range" min="0" max="40" step="5" value="15"></label>
+        <label class="f" for="r-price">Dein Preis für ein Paket M auf der ganzen Strecke
+          <span class="price-in"><input id="r-price" type="number" min="5" max="200" step="0.01" inputmode="decimal"><span>€</span></span>
+        </label>
+        <p class="hint num" id="r-price-hint"></p>
+        <p class="msg-err" id="routeErr" hidden></p>
+        <button class="btn" type="submit">Route veröffentlichen</button>
+      </form>
+      <div style="display:grid;gap:20px;min-width:0">
+        <div class="mapbox courier-map">
+          <div class="lmap" id="courierMap"></div>
+          <div class="map-tools">
+            <div class="seg" role="radiogroup" aria-label="Klick auf die Karte setzt">
+              <input type="radio" name="cmode" id="cm-from" value="from" checked><label for="cm-from">Klick setzt Start</label>
+              <input type="radio" name="cmode" id="cm-to" value="to"><label for="cm-to">Klick setzt Ziel</label>
+            </div>
+          </div>
+        </div>
+        <p class="small muted" id="corridorNote" style="margin-top:-12px"></p>
+        <div class="panel profile-card" aria-live="polite">
+          <p class="small muted">So sehen Absender dein Profil</p>
+          <div class="top">
+            <img class="avatar lg" id="pAvatar" src="" alt="Dein Profilbild">
+            <div><div style="font-weight:700;font-size:20px" id="pName">Max S.</div><span class="verified"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3"/></svg>Ausweis geprüft</span></div>
+          </div>
+          <div class="stats">
+            <div><b class="num">neu</b><span>Bewertung</span></div>
+            <div><b class="num">0</b><span>Zustellungen</span></div>
+            <div><b class="num">0 €</b><span>verdient</span></div>
+          </div>
+          <p class="small" id="pRoute">Noch keine Route veröffentlicht.</p>
+          <p class="small muted">Für Auszahlungen brauchst du später ein Bankkonto und deine Steuer-ID. Einnahmen werden jährlich an das Bundeszentralamt für Steuern gemeldet.</p>
+        </div>
+        <div class="panel" id="planPanel" hidden></div>
+        <div>
+          <h3 style="margin-bottom:10px">Deine Routen</h3>
+          <div class="route-list" id="myRoutes"><div class="empty"><p class="muted">Noch keine Route. Trag links deine nächste Fahrt ein, sie erscheint sofort in der Suche.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ORDER ================= -->
+<div class="view" id="v-auftrag">
+  <div class="wrap page">
+    <div id="orderEmpty"></div>
+    <div id="orderMain" hidden>
+      <div id="orderHead"></div>
+      <div class="order-grid">
+        <div class="mapbox order-map">
+          <div class="lmap" id="orderMap"></div>
+          <div class="trk">
+            <div style="flex:1;min-width:220px">
+              <div style="display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:6px"><b id="trkTitle"></b><span class="num muted" id="trkEta"></span></div>
+              <div class="progress"><span id="trkBar"></span></div>
+              <div class="small muted num" id="trkPing" style="margin-top:6px"></div>
+            </div>
+            <div class="speed" id="speedCtl"><span class="muted">Simulation</span>
+              <button type="button" data-speed="1" aria-pressed="false">Echtzeit</button><button type="button" data-speed="60" aria-pressed="true">×60</button><button type="button" data-speed="300" aria-pressed="false">×300</button>
+              <label><input type="checkbox" id="follow" checked> Karte folgt</label>
+            </div>
+          </div>
+        </div>
+        <div class="panel summary" id="orderSide"></div>
+      </div>
+      <div class="phones" id="orderPhones"></div>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer class="f3">
+  <div class="wrap">
+    <div class="cols">
+      <div><div style="font-size:18px;font-weight:600">MyPack24</div><p style="color:#A1A1A6;margin-top:8px;font-size:15px">Sendungen, die mitfahren</p><div class="store"><span>Bald für iPhone</span><span>Bald für Android</span></div></div>
+      <div><h4>Produkt</h4><a href="#senden">Senden</a><a href="#mitnehmen">Mitnehmen</a><a href="#auftrag">Meine Aufträge</a></div>
+      <div><h4>Unternehmen</h4><a href="impressum.html">Kontakt</a><span class="soon">Presse (folgt)</span></div>
+      <div><h4>Rechtliches</h4><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span class="soon">AGB (folgen)</span></div>
+    </div>
+    <div class="fine"><span>© 2026 MyPack24 (in Gründung)</span><span>Vorschau vom 19.11.2026 · Karte: Leaflet, Natural Earth · Gestaltung nach unslop von Damir Sokolovsky (CC BY 4.0)</span></div>
+  </div>
+</footer>
+
+<div class="modal" id="bookModal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><div class="box" id="bookBox"></div></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="leaflet.js"></script>
+<script>
+(function(){
+"use strict";
+/* ---------- data: cities and simplified Autobahn network ---------- */
+const CITIES = {
+  hh:{n:"Hamburg",lat:53.5511,lon:9.9937,big:1}, ki:{n:"Kiel",lat:54.3233,lon:10.1228}, ro:{n:"Rostock",lat:54.0924,lon:12.0991},
+  hb:{n:"Bremen",lat:53.0793,lon:8.8017,big:1}, ha:{n:"Hannover",lat:52.3759,lon:9.732,big:1}, b:{n:"Berlin",lat:52.52,lon:13.405,big:1},
+  md:{n:"Magdeburg",lat:52.1205,lon:11.6276}, bs:{n:"Braunschweig",lat:52.2689,lon:10.5268}, l:{n:"Leipzig",lat:51.3397,lon:12.3731,big:1},
+  dd:{n:"Dresden",lat:51.0504,lon:13.7373,big:1}, ef:{n:"Erfurt",lat:50.9848,lon:11.0299}, ks:{n:"Kassel",lat:51.3127,lon:9.4797},
+  go:{n:"Göttingen",lat:51.5413,lon:9.9158}, bi:{n:"Bielefeld",lat:52.0302,lon:8.5325}, os:{n:"Osnabrück",lat:52.2799,lon:8.0472},
+  ms:{n:"Münster",lat:51.9607,lon:7.6261}, do:{n:"Dortmund",lat:51.5136,lon:7.4653,big:1}, e:{n:"Essen",lat:51.4556,lon:7.0116},
+  du:{n:"Duisburg",lat:51.4344,lon:6.7623}, d:{n:"Düsseldorf",lat:51.2277,lon:6.7735,big:1}, k:{n:"Köln",lat:50.9375,lon:6.9603,big:1},
+  bn:{n:"Bonn",lat:50.7374,lon:7.0982}, ac:{n:"Aachen",lat:50.7753,lon:6.0839}, ko:{n:"Koblenz",lat:50.3569,lon:7.589},
+  f:{n:"Frankfurt",lat:50.1109,lon:8.6821,big:1}, mz:{n:"Mainz",lat:49.9929,lon:8.2473}, wu:{n:"Würzburg",lat:49.7913,lon:9.9534},
+  ma:{n:"Mannheim",lat:49.4875,lon:8.466}, ka:{n:"Karlsruhe",lat:49.0069,lon:8.4037}, sb:{n:"Saarbrücken",lat:49.2402,lon:6.9969},
+  s:{n:"Stuttgart",lat:48.7758,lon:9.1829,big:1}, fr:{n:"Freiburg",lat:47.999,lon:7.8421}, ul:{n:"Ulm",lat:48.4011,lon:9.9876},
+  a:{n:"Augsburg",lat:48.3705,lon:10.8978}, m:{n:"München",lat:48.1351,lon:11.582,big:1}, n:{n:"Nürnberg",lat:49.4521,lon:11.0767,big:1},
+  r:{n:"Regensburg",lat:49.0134,lon:12.1016}
+};
+const CITY_ORDER = Object.keys(CITIES).sort((x,y)=>CITIES[x].n.localeCompare(CITIES[y].n,"de"));
+const EDGES = [
+  ["ki","hh","A7"],["ro","b","A19/A24"],["ro","hh","A20/A1"],["hh","hb","A1"],["hh","b","A24"],["hh","ha","A7"],
+  ["hb","os","A1"],["hb","ha","A27/A7"],["os","ms","A1"],["ms","do","A1"],["os","bi","A33"],["bi","ha","A2"],
+  ["bi","do","A2"],["ha","bs","A2"],["bs","md","A2"],["md","b","A2"],["ha","go","A7"],["go","ks","A7"],
+  ["ks","do","A44"],["ks","f","A5"],["ks","wu","A7"],["ks","ef","A44/A4"],["b","l","A9"],["md","l","A14"],
+  ["l","dd","A14"],["b","dd","A13"],["l","ef","A9/A4"],["l","n","A9"],["ef","n","A71/A73"],["do","e","A40"],
+  ["e","du","A40"],["du","d","A3"],["do","k","A1"],["d","k","A3"],["e","d","A52"],["k","bn","A555"],
+  ["k","ac","A4"],["bn","ko","A61"],["k","f","A3"],["ko","mz","A61"],["mz","f","A66"],["ma","sb","A6"],
+  ["f","ma","A67/A6"],["f","wu","A3"],["wu","n","A3"],["ma","ka","A5"],["ka","s","A8"],["ka","fr","A5"],
+  ["s","ul","A8"],["ul","a","A8"],["a","m","A8"],["n","m","A9"],["n","r","A3"],["r","m","A93/A92"],
+  ["wu","s","A81"],["mz","ma","A61"],["d","ac","A44"]
+];
+const EG = {"ki|hh":{"p":[[54.323,10.123],[54.31,10.101],[54.296,10.08],[54.212,9.982],[54.179,9.964],[54.144,9.956],[54.092,9.932],[54.074,9.927],[54.054,9.925],[54.035,9.927],[53.982,9.944],[53.961,9.948],[53.94,9.946],[53.919,9.941],[53.829,9.914],[53.81,9.912],[53.768,9.916],[53.644,9.917],[53.548,9.895],[53.551,9.994]],"km":100},"ro|b":{"p":[[54.092,12.099],[54.118,12.129],[54.115,12.176],[54.092,12.198],[54.054,12.194],[53.973,12.207],[53.899,12.244],[53.763,12.339],[53.725,12.36],[53.686,12.377],[53.642,12.382],[53.613,12.369],[53.578,12.342],[53.545,12.334],[53.516,12.359],[53.485,12.389],[53.434,12.437],[53.416,12.45],[53.397,12.459],[53.377,12.466],[53.356,12.471],[53.331,12.475],[53.306,12.476],[53.281,12.474],[53.257,12.47],[53.224,12.46],[53.206,12.458],[53.179,12.46],[53.148,12.467],[53.083,12.536],[53.042,12.568],[53.028,12.583],[52.926,12.729],[52.914,12.743],[52.884,12.765],[52.867,12.773],[52.82,12.787],[52.807,12.794],[52.783,12.816],[52.766,12.849],[52.733,12.972],[52.721,13.045],[52.708,13.03],[52.644,13.03],[52.631,13.028],[52.599,13.003],[52.582,12.989],[52.563,12.99],[52.522,13.22],[52.52,13.254],[52.518,13.285],[52.514,13.384],[52.52,13.405]],"km":238},"ro|hh":{"p":[[54.092,12.099],[54.103,12.079],[54.111,11.969],[54.103,11.883],[54.094,11.849],[54.081,11.819],[54.042,11.701],[54.033,11.685],[54.012,11.654],[53.988,11.629],[53.96,11.606],[53.93,11.588],[53.898,11.574],[53.888,11.553],[53.87,11.507],[53.867,11.49],[53.869,11.424],[53.858,11.378],[53.847,11.352],[53.829,11.311],[53.841,11.212],[53.841,11.195],[53.836,11.139],[53.835,11.119],[53.846,11.057],[53.852,10.936],[53.852,10.92],[53.843,10.867],[53.84,10.816],[53.821,10.769],[53.812,10.711],[53.832,10.667],[53.852,10.637],[53.858,10.621],[53.859,10.569],[53.834,10.536],[53.821,10.51],[53.808,10.457],[53.803,10.444],[53.781,10.404],[53.753,10.374],[53.685,10.32],[53.617,10.256],[53.601,10.237],[53.589,10.217],[53.575,10.174],[53.569,10.134],[53.56,10.094],[53.551,9.994]],"km":178},"hh|hb":{"p":[[53.551,9.994],[53.505,10.038],[53.463,10.03],[53.378,10.033],[53.387,9.875],[53.386,9.823],[53.381,9.784],[53.376,9.765],[53.24,9.414],[53.237,9.402],[53.231,9.339],[53.212,9.294],[53.197,9.275],[53.131,9.202],[53.074,9.127],[53.058,9.096],[53.054,9.039],[53.072,8.968],[53.099,8.942],[53.118,8.921],[53.131,8.894],[53.151,8.791],[53.122,8.759],[53.079,8.802]],"km":134},"hh|b":{"p":[[53.551,9.994],[53.532,10.059],[53.503,10.169],[53.476,10.331],[53.46,10.374],[53.394,10.501],[53.38,10.541],[53.373,10.582],[53.372,10.608],[53.376,10.662],[53.398,10.817],[53.402,10.99],[53.394,11.063],[53.342,11.235],[53.325,11.354],[53.326,11.463],[53.324,11.522],[53.312,11.539],[53.284,11.588],[53.253,11.62],[53.222,11.649],[53.21,11.664],[53.048,11.963],[53.018,12.031],[53.006,12.069],[52.998,12.108],[52.974,12.341],[52.965,12.381],[52.947,12.43],[52.926,12.461],[52.893,12.5],[52.864,12.526],[52.834,12.548],[52.802,12.566],[52.748,12.587],[52.729,12.597],[52.714,12.61],[52.69,12.639],[52.672,12.679],[52.66,12.715],[52.631,12.852],[52.616,12.884],[52.578,12.943],[52.563,12.99],[52.522,13.22],[52.52,13.254],[52.518,13.285],[52.514,13.384],[52.52,13.405]],"km":283},"hh|ha":{"p":[[53.551,9.994],[53.505,10.038],[53.463,10.03],[53.378,10.033],[53.357,10.058],[53.329,10.076],[53.303,10.087],[53.289,10.09],[53.252,10.09],[53.197,10.084],[53.173,10.078],[53.156,10.036],[53.138,9.99],[53.123,9.98],[53.088,9.962],[53.008,9.913],[52.984,9.893],[52.964,9.87],[52.907,9.765],[52.883,9.729],[52.87,9.713],[52.84,9.685],[52.822,9.674],[52.802,9.667],[52.775,9.663],[52.758,9.662],[52.736,9.665],[52.695,9.679],[52.656,9.701],[52.449,9.862],[52.416,9.848],[52.376,9.732]],"km":154},"hb|os":{"p":[[53.079,8.802],[53.042,8.763],[53.035,8.729],[53.021,8.679],[52.977,8.615],[52.967,8.581],[52.961,8.534],[52.938,8.496],[52.93,8.476],[52.92,8.4],[52.904,8.357],[52.887,8.286],[52.874,8.256],[52.851,8.228],[52.823,8.212],[52.766,8.196],[52.734,8.194],[52.694,8.197],[52.663,8.187],[52.626,8.14],[52.602,8.124],[52.563,8.119],[52.546,8.114],[52.511,8.097],[52.479,8.076],[52.432,8.038],[52.417,8.029],[52.382,8.017],[52.352,8.02],[52.321,8.035],[52.28,8.047]],"km":118},"hb|ha":{"p":[[53.079,8.802],[53.024,8.785],[53.005,8.798],[52.916,8.839],[52.883,8.859],[52.855,8.885],[52.843,8.9],[52.8,8.973],[52.774,9.002],[52.748,9.027],[52.733,9.056],[52.718,9.071],[52.689,9.085],[52.664,9.126],[52.664,9.147],[52.666,9.19],[52.643,9.223],[52.64,9.249],[52.609,9.264],[52.591,9.279],[52.579,9.297],[52.518,9.446],[52.494,9.481],[52.47,9.503],[52.454,9.531],[52.443,9.566],[52.425,9.594],[52.428,9.643],[52.376,9.732]],"km":112},"os|ms":{"p":[[52.28,8.047],[52.289,7.999],[52.283,7.977],[52.262,7.932],[52.252,7.914],[52.221,7.829],[52.211,7.808],[52.184,7.762],[52.154,7.718],[52.085,7.637],[52.043,7.6],[51.998,7.566],[51.986,7.591],[51.968,7.618],[51.961,7.626]],"km":56},"ms|do":{"p":[[51.961,7.626],[51.935,7.624],[51.934,7.546],[51.914,7.554],[51.893,7.56],[51.854,7.576],[51.745,7.642],[51.706,7.66],[51.665,7.673],[51.623,7.678],[51.593,7.677],[51.564,7.67],[51.538,7.657],[51.52,7.638],[51.502,7.617],[51.479,7.574],[51.469,7.545],[51.514,7.465]],"km":74},"os|bi":{"p":[[52.28,8.047],[52.266,8.093],[52.122,8.203],[52.101,8.235],[52.088,8.305],[52.075,8.339],[52.036,8.403],[52.025,8.441],[52.03,8.533]],"km":49},"bi|ha":{"p":[[52.03,8.533],[51.984,8.579],[51.955,8.56],[52.095,8.663],[52.121,8.693],[52.154,8.756],[52.174,8.785],[52.197,8.801],[52.232,8.86],[52.245,8.904],[52.247,8.926],[52.234,9.203],[52.237,9.224],[52.25,9.272],[52.272,9.316],[52.379,9.459],[52.401,9.502],[52.416,9.547],[52.425,9.594],[52.428,9.643],[52.376,9.732]],"km":121},"bi|do":{"p":[[52.03,8.533],[51.984,8.579],[51.955,8.56],[51.937,8.543],[51.91,8.507],[51.892,8.466],[51.88,8.422],[51.831,8.139],[51.82,8.096],[51.804,8.057],[51.794,8.038],[51.768,8.004],[51.753,7.989],[51.686,7.938],[51.658,7.907],[51.641,7.869],[51.633,7.829],[51.617,7.703],[51.593,7.677],[51.564,7.67],[51.538,7.657],[51.52,7.638],[51.502,7.617],[51.479,7.574],[51.469,7.545],[51.514,7.465]],"km":115},"ha|bs":{"p":[[52.376,9.732],[52.416,9.848],[52.422,9.885],[52.41,9.963],[52.407,10.042],[52.394,10.096],[52.355,10.189],[52.338,10.452],[52.319,10.56],[52.312,10.509],[52.302,10.499],[52.269,10.49],[52.269,10.527]],"km":73},"bs|md":{"p":[[52.269,10.527],[52.259,10.551],[52.273,10.604],[52.272,10.657],[52.28,10.698],[52.308,10.725],[52.317,10.748],[52.33,10.794],[52.329,10.818],[52.302,10.905],[52.28,11.003],[52.255,11.045],[52.215,11.282],[52.196,11.343],[52.192,11.364],[52.172,11.593],[52.166,11.612],[52.121,11.628]],"km":89},"md|b":{"p":[[52.121,11.628],[52.166,11.612],[52.178,11.647],[52.219,11.725],[52.228,11.764],[52.255,12.163],[52.252,12.237],[52.253,12.278],[52.27,12.412],[52.28,12.454],[52.299,12.488],[52.341,12.529],[52.349,12.541],[52.357,12.583],[52.35,12.663],[52.352,12.832],[52.34,12.835],[52.319,12.876],[52.31,12.904],[52.304,12.943],[52.304,12.984],[52.313,13.102],[52.342,13.121],[52.357,13.139],[52.384,13.171],[52.501,13.28],[52.518,13.285],[52.514,13.384],[52.52,13.405]],"km":155},"ha|go":{"p":[[52.376,9.732],[52.344,9.866],[52.323,9.876],[52.299,9.908],[52.267,9.929],[52.183,9.984],[52.156,10.011],[52.138,10.034],[52.128,10.092],[52.123,10.109],[52.106,10.153],[52.084,10.188],[52.069,10.198],[51.952,10.155],[51.94,10.153],[51.875,10.149],[51.844,10.142],[51.813,10.109],[51.789,10.055],[51.708,9.945],[51.683,9.921],[51.664,9.908],[51.636,9.893],[51.541,9.916]],"km":119},"go|ks":{"p":[[51.541,9.916],[51.508,9.868],[51.454,9.842],[51.433,9.823],[51.411,9.778],[51.387,9.664],[51.371,9.628],[51.256,9.5],[51.313,9.48]],"km":53},"ks|do":{"p":[[51.313,9.48],[51.287,9.399],[51.456,9.085],[51.539,8.899],[51.571,8.806],[51.582,8.758],[51.589,8.702],[51.592,8.642],[51.529,7.686],[51.516,7.637],[51.502,7.617],[51.479,7.574],[51.469,7.545],[51.514,7.465]],"km":160},"ks|f":{"p":[[51.313,9.48],[51.271,9.415],[51.247,9.406],[51.219,9.387],[51.192,9.36],[51.176,9.348],[51.145,9.328],[51.115,9.303],[51.088,9.269],[51.062,9.227],[50.948,9.037],[50.931,8.997],[50.906,8.897],[50.886,8.852],[50.857,8.821],[50.839,8.809],[50.768,8.777],[50.735,8.756],[50.724,8.75],[50.689,8.737],[50.655,8.721],[50.637,8.71],[50.565,8.649],[50.542,8.634],[50.519,8.673],[50.493,8.712],[50.467,8.725],[50.439,8.705],[50.406,8.693],[50.357,8.689],[50.273,8.671],[50.251,8.664],[50.231,8.654],[50.204,8.632],[50.175,8.598],[50.144,8.581],[50.125,8.624],[50.111,8.682]],"km":170},"ks|wu":{"p":[[51.313,9.48],[51.254,9.494],[51.237,9.484],[51.207,9.473],[51.171,9.468],[51.116,9.466],[51.076,9.476],[51.054,9.478],[51.025,9.475],[50.996,9.48],[50.969,9.491],[50.939,9.515],[50.925,9.535],[50.899,9.556],[50.84,9.582],[50.84,9.568],[50.77,9.607],[50.749,9.623],[50.711,9.658],[50.677,9.679],[50.639,9.689],[50.54,9.696],[50.502,9.704],[50.464,9.716],[50.365,9.759],[50.346,9.77],[50.318,9.801],[50.295,9.839],[50.281,9.856],[50.249,9.886],[50.208,9.935],[50.17,9.956],[50.132,9.956],[50.115,9.967],[50.092,10.033],[50.073,10.06],[50.047,10.075],[50.023,10.074],[50.007,10.062],[49.981,10.034],[49.962,10.019],[49.94,10.006],[49.916,9.998],[49.891,9.997],[49.862,10.012],[49.824,10.056],[49.791,9.953]],"km":196},"ks|ef":{"p":[[51.313,9.48],[51.316,9.564],[51.307,9.578],[51.279,9.676],[51.263,9.707],[51.192,9.806],[51.174,9.839],[51.159,9.878],[51.148,9.919],[51.132,10.037],[51.117,10.092],[51.103,10.131],[51.033,10.202],[51.036,10.19],[51.014,10.27],[51.006,10.34],[50.998,10.375],[50.981,10.42],[50.963,10.455],[50.922,10.502],[50.907,10.527],[50.894,10.58],[50.9,10.69],[50.883,10.725],[50.875,10.78],[50.891,10.82],[50.899,10.861],[50.896,10.962],[50.903,11.01],[50.941,10.977],[50.961,10.963],[50.985,11.03]],"km":144},"b|l":{"p":[[52.52,13.405],[52.514,13.384],[52.518,13.285],[52.501,13.28],[52.384,13.171],[52.357,13.139],[52.342,13.121],[52.313,13.102],[52.304,12.984],[52.304,12.943],[52.278,12.918],[52.241,12.914],[52.205,12.89],[52.173,12.808],[52.154,12.78],[52.135,12.765],[52.115,12.744],[52.078,12.695],[52.037,12.631],[51.961,12.489],[51.939,12.46],[51.908,12.434],[51.895,12.419],[51.826,12.303],[51.798,12.273],[51.78,12.266],[51.741,12.263],[51.723,12.26],[51.698,12.25],[51.657,12.24],[51.58,12.229],[51.441,12.251],[51.431,12.261],[51.409,12.457],[51.4,12.493],[51.395,12.511],[51.303,12.441],[51.34,12.373]],"km":202},"md|l":{"p":[[52.121,11.628],[52.109,11.622],[52.021,11.662],[51.959,11.683],[51.912,11.693],[51.883,11.693],[51.866,11.691],[51.777,11.669],[51.752,11.666],[51.72,11.679],[51.708,11.698],[51.68,11.763],[51.661,11.828],[51.631,11.867],[51.601,11.883],[51.58,11.917],[51.572,11.968],[51.555,12.015],[51.545,12.028],[51.496,12.073],[51.471,12.109],[51.456,12.151],[51.436,12.243],[51.431,12.261],[51.409,12.457],[51.4,12.493],[51.395,12.511],[51.303,12.441],[51.34,12.373]],"km":139},"l|dd":{"p":[[51.34,12.373],[51.261,12.42],[51.252,12.47],[51.292,12.562],[51.302,12.578],[51.315,12.625],[51.249,12.792],[51.232,12.868],[51.21,12.933],[51.145,13.078],[51.139,13.096],[51.127,13.163],[51.098,13.225],[51.091,13.243],[51.061,13.36],[51.045,13.395],[51.052,13.45],[51.047,13.607],[51.048,13.622],[51.038,13.675],[51.05,13.737]],"km":116},"b|dd":{"p":[[52.52,13.405],[52.514,13.384],[52.487,13.347],[52.457,13.478],[52.442,13.511],[52.414,13.546],[52.391,13.559],[52.352,13.562],[52.317,13.575],[52.238,13.605],[52.205,13.621],[52.176,13.644],[52.163,13.656],[52.133,13.67],[52.08,13.675],[52.045,13.686],[52.03,13.697],[52.005,13.734],[51.99,13.772],[51.965,13.801],[51.938,13.808],[51.907,13.829],[51.898,13.845],[51.877,13.889],[51.858,13.896],[51.832,13.902],[51.817,13.886],[51.8,13.873],[51.779,13.866],[51.746,13.873],[51.72,13.893],[51.699,13.905],[51.677,13.915],[51.653,13.922],[51.629,13.926],[51.605,13.928],[51.582,13.926],[51.558,13.921],[51.536,13.912],[51.505,13.893],[51.469,13.85],[51.456,13.838],[51.423,13.82],[51.405,13.79],[51.368,13.721],[51.341,13.708],[51.312,13.712],[51.273,13.722],[51.231,13.729],[51.204,13.73],[51.185,13.734],[51.15,13.746],[51.118,13.737],[51.089,13.713],[51.05,13.737]],"km":193},"l|ef":{"p":[[51.34,12.373],[51.265,12.318],[51.262,12.296],[51.241,12.215],[51.238,12.161],[51.248,12.098],[51.251,12.025],[51.266,11.986],[51.279,11.97],[51.308,11.941],[51.371,11.892],[51.386,11.878],[51.414,11.845],[51.41,11.756],[51.413,11.732],[51.453,11.566],[51.456,11.528],[51.451,11.468],[51.452,11.371],[51.483,11.025],[51.462,11.032],[51.447,11.043],[51.36,11.12],[51.296,11.195],[51.27,11.215],[51.255,11.222],[51.224,11.227],[51.199,11.222],[51.175,11.189],[51.166,11.174],[51.122,11.13],[51.057,11.077],[51.033,11.038],[50.985,11.03]],"km":180},"l|n":{"p":[[51.34,12.373],[51.303,12.441],[51.395,12.511],[51.4,12.493],[51.409,12.457],[51.431,12.261],[51.414,12.25],[51.358,12.234],[51.34,12.226],[51.31,12.199],[51.215,12.025],[51.189,11.993],[51.173,11.979],[51.142,11.963],[51.07,11.948],[51.041,11.939],[51.018,11.923],[51.006,11.897],[50.99,11.872],[50.975,11.849],[50.955,11.833],[50.934,11.827],[50.913,11.828],[50.892,11.836],[50.861,11.848],[50.83,11.874],[50.807,11.889],[50.78,11.894],[50.697,11.846],[50.632,11.799],[50.598,11.781],[50.564,11.775],[50.508,11.789],[50.473,11.787],[50.433,11.775],[50.381,11.767],[50.367,11.767],[50.335,11.775],[50.311,11.793],[50.281,11.798],[50.269,11.792],[50.22,11.755],[50.121,11.692],[50.103,11.687],[50.073,11.664],[50.061,11.648],[50.038,11.602],[50.001,11.576],[49.981,11.574],[49.922,11.579],[49.904,11.578],[49.886,11.576],[49.809,11.556],[49.789,11.549],[49.772,11.54],[49.741,11.518],[49.517,11.281],[49.415,11.149],[49.452,11.077]],"km":302},"ef|n":{"p":[[50.985,11.03],[50.961,10.963],[50.941,10.977],[50.903,11.01],[50.886,11.026],[50.867,11.04],[50.846,11.05],[50.824,11.054],[50.804,11.053],[50.785,11.049],[50.755,11.027],[50.742,11.002],[50.732,10.954],[50.739,10.833],[50.734,10.797],[50.723,10.758],[50.716,10.72],[50.697,10.677],[50.667,10.659],[50.601,10.704],[50.585,10.723],[50.562,10.768],[50.535,10.799],[50.507,10.814],[50.49,10.825],[50.474,10.84],[50.411,10.915],[50.383,10.926],[50.364,10.925],[50.344,10.932],[50.319,10.966],[50.312,10.986],[50.28,11.01],[50.264,11.012],[50.244,11.047],[50.222,11.061],[50.207,11.065],[50.177,11.066],[50.152,11.059],[50.131,11.046],[50.112,11.029],[50.069,10.982],[50.042,10.956],[50.01,10.937],[49.973,10.929],[49.943,10.899],[49.925,10.919],[49.905,10.956],[49.881,10.988],[49.853,11.015],[49.801,11.047],[49.784,11.054],[49.765,11.06],[49.747,11.063],[49.707,11.061],[49.669,11.048],[49.596,11.014],[49.536,11.004],[49.476,11.017],[49.452,11.077]],"km":221},"do|e":{"p":[[51.514,7.465],[51.455,7.396],[51.468,7.304],[51.462,7.184],[51.466,7.129],[51.457,7.08],[51.456,7.012]],"km":36},"e|du":{"p":[[51.456,7.012],[51.411,6.937],[51.392,6.907],[51.309,6.822],[51.339,6.834],[51.378,6.811],[51.397,6.808],[51.434,6.762]],"km":38},"du|d":{"p":[[51.434,6.762],[51.397,6.808],[51.378,6.811],[51.348,6.827],[51.309,6.822],[51.295,6.814],[51.263,6.802],[51.248,6.795],[51.228,6.774]],"km":26},"do|k":{"p":[[51.514,7.465],[51.452,7.439],[51.437,7.47],[51.421,7.484],[51.389,7.475],[51.377,7.441],[51.371,7.394],[51.352,7.349],[51.342,7.335],[51.322,7.315],[51.3,7.272],[51.278,7.237],[51.239,7.245],[51.219,7.245],[51.185,7.23],[51.171,7.221],[51.132,7.189],[51.111,7.163],[51.09,7.117],[51.073,7.097],[51.046,7.068],[51.04,7.049],[51.028,6.992],[51.002,6.999],[50.95,7.045],[50.938,6.96]],"km":91},"d|k":{"p":[[51.228,6.774],[51.203,6.728],[51.19,6.678],[51.159,6.707],[51.124,6.72],[51.096,6.728],[51.064,6.753],[51.034,6.781],[51.021,6.796],[50.985,6.849],[51.016,6.93],[51.013,6.982],[51.002,6.999],[50.95,7.045],[50.938,6.96]],"km":61},"e|d":{"p":[[51.456,7.012],[51.411,6.937],[51.392,6.907],[51.309,6.822],[51.295,6.814],[51.263,6.802],[51.248,6.795],[51.228,6.774]],"km":32},"k|bn":{"p":[[50.938,6.96],[50.924,7.045],[50.845,7.098],[50.801,7.112],[50.737,7.098]],"km":29},"k|ac":{"p":[[50.938,6.96],[50.894,7.009],[50.878,6.967],[50.88,6.911],[50.908,6.83],[50.92,6.807],[50.892,6.683],[50.892,6.667],[50.899,6.585],[50.884,6.537],[50.847,6.483],[50.83,6.442],[50.831,6.386],[50.84,6.356],[50.845,6.332],[50.856,6.229],[50.775,6.084]],"km":82},"bn|ko":{"p":[[50.737,7.098],[50.677,7.067],[50.64,7.054],[50.607,7.047],[50.588,7.037],[50.55,7.147],[50.528,7.18],[50.499,7.206],[50.483,7.217],[50.465,7.227],[50.434,7.232],[50.405,7.247],[50.387,7.292],[50.383,7.319],[50.387,7.383],[50.381,7.409],[50.324,7.464],[50.357,7.589]],"km":76},"k|f":{"p":[[50.938,6.96],[50.923,7.04],[50.909,7.124],[50.896,7.162],[50.867,7.192],[50.85,7.2],[50.768,7.226],[50.741,7.243],[50.724,7.257],[50.708,7.275],[50.694,7.294],[50.682,7.315],[50.639,7.414],[50.619,7.452],[50.602,7.491],[50.544,7.679],[50.521,7.722],[50.5,7.746],[50.474,7.761],[50.456,7.766],[50.453,7.832],[50.444,7.875],[50.423,7.918],[50.417,7.943],[50.409,7.993],[50.404,8.014],[50.382,8.075],[50.373,8.136],[50.358,8.185],[50.338,8.219],[50.312,8.248],[50.279,8.262],[50.265,8.263],[50.217,8.26],[50.189,8.265],[50.151,8.302],[50.136,8.32],[50.107,8.345],[50.081,8.355],[50.076,8.407],[50.105,8.462],[50.119,8.506],[50.121,8.575],[50.111,8.682]],"km":181},"ko|mz":{"p":[[50.357,7.589],[50.324,7.464],[50.23,7.517],[50.211,7.545],[50.208,7.596],[50.185,7.634],[50.167,7.633],[50.129,7.622],[50.11,7.62],[50.08,7.63],[50.044,7.649],[50.032,7.657],[50.006,7.69],[49.967,7.823],[49.953,7.853],[49.937,7.888],[49.928,7.917],[49.947,7.949],[49.961,7.983],[50.016,8.155],[50.018,8.173],[49.993,8.247]],"km":101},"mz|f":{"p":[[49.993,8.247],[50.017,8.191],[50.049,8.241],[50.057,8.268],[50.061,8.36],[50.076,8.407],[50.105,8.462],[50.119,8.506],[50.121,8.575],[50.111,8.682]],"km":45},"ma|sb":{"p":[[49.488,8.466],[49.458,8.338],[49.519,8.323],[49.551,8.315],[49.554,8.29],[49.552,8.212],[49.538,8.132],[49.499,8.021],[49.49,7.984],[49.485,7.944],[49.485,7.747],[49.481,7.707],[49.465,7.627],[49.428,7.52],[49.403,7.469],[49.356,7.32],[49.284,7.165],[49.266,7.111],[49.236,7.079],[49.218,7.056],[49.24,6.997]],"km":131},"f|ma":{"p":[[50.111,8.682],[50.121,8.576],[50.003,8.588],[49.965,8.588],[49.945,8.585],[49.834,8.553],[49.768,8.528],[49.749,8.523],[49.709,8.521],[49.688,8.521],[49.655,8.526],[49.635,8.532],[49.527,8.546],[49.488,8.466]],"km":84},"f|wu":{"p":[[50.111,8.682],[50.072,8.721],[50.077,8.803],[50.075,8.843],[50.072,8.863],[50.062,8.902],[50.042,8.938],[50.008,8.981],[49.999,9.024],[50.006,9.095],[50.007,9.142],[49.994,9.257],[49.983,9.295],[49.975,9.315],[49.855,9.53],[49.834,9.552],[49.804,9.572],[49.79,9.583],[49.775,9.626],[49.794,9.699],[49.789,9.744],[49.761,9.817],[49.758,9.842],[49.791,9.953]],"km":112},"wu|n":{"p":[[49.791,9.953],[49.756,10.014],[49.764,10.072],[49.799,10.21],[49.804,10.243],[49.802,10.274],[49.733,10.675],[49.733,10.695],[49.744,10.754],[49.734,10.801],[49.726,10.816],[49.704,10.847],[49.685,10.863],[49.651,10.88],[49.621,10.884],[49.597,10.895],[49.574,10.932],[49.56,10.972],[49.536,11.004],[49.476,11.017],[49.452,11.077]],"km":107},"ma|ka":{"p":[[49.488,8.466],[49.458,8.338],[49.445,8.343],[49.416,8.366],[49.376,8.423],[49.344,8.455],[49.287,8.359],[49.252,8.352],[49.218,8.348],[49.192,8.318],[49.144,8.312],[49.107,8.303],[49.086,8.286],[49.069,8.264],[49.048,8.305],[49.007,8.404]],"km":75},"ka|s":{"p":[[49.007,8.404],[48.98,8.448],[48.959,8.497],[48.934,8.579],[48.927,8.623],[48.935,8.743],[48.935,8.762],[48.913,8.801],[48.888,8.805],[48.858,8.826],[48.844,8.859],[48.841,8.877],[48.839,8.919],[48.831,8.959],[48.812,8.994],[48.765,9.055],[48.745,9.091],[48.729,9.127],[48.723,9.146],[48.739,9.185],[48.776,9.183]],"km":77},"ka|fr":{"p":[[49.007,8.404],[48.966,8.376],[48.936,8.359],[48.907,8.334],[48.891,8.299],[48.879,8.259],[48.872,8.24],[48.853,8.212],[48.81,8.175],[48.707,8.102],[48.688,8.085],[48.603,7.987],[48.575,7.972],[48.453,7.89],[48.416,7.857],[48.386,7.824],[48.369,7.809],[48.35,7.796],[48.329,7.789],[48.287,7.78],[48.267,7.771],[48.248,7.759],[48.219,7.751],[48.191,7.756],[48.111,7.803],[48.067,7.815],[48.043,7.808],[48.014,7.829],[47.999,7.842]],"km":132},"s|ul":{"p":[[48.776,9.183],[48.739,9.185],[48.71,9.214],[48.708,9.262],[48.706,9.28],[48.695,9.314],[48.666,9.369],[48.66,9.383],[48.635,9.463],[48.631,9.482],[48.627,9.58],[48.619,9.617],[48.596,9.646],[48.568,9.657],[48.547,9.687],[48.534,9.719],[48.505,9.876],[48.473,9.99],[48.462,10.019],[48.428,10.012],[48.411,10.005],[48.401,9.988]],"km":86},"ul|a":{"p":[[48.401,9.988],[48.411,10.005],[48.428,10.012],[48.462,10.019],[48.464,10.128],[48.462,10.188],[48.457,10.213],[48.433,10.268],[48.421,10.372],[48.428,10.897],[48.393,10.897],[48.371,10.898]],"km":82},"a|m":{"p":[[48.371,10.898],[48.393,10.897],[48.428,10.897],[48.422,10.975],[48.416,11.009],[48.405,11.046],[48.39,11.084],[48.38,11.102],[48.245,11.311],[48.21,11.386],[48.199,11.425],[48.161,11.46],[48.152,11.508],[48.149,11.521],[48.141,11.56],[48.135,11.582]],"km":71},"n|m":{"p":[[49.452,11.077],[49.415,11.149],[49.388,11.173],[49.356,11.194],[49.339,11.203],[49.321,11.211],[49.288,11.221],[49.152,11.243],[49.122,11.257],[49.109,11.268],[49.084,11.3],[49.008,11.383],[48.968,11.436],[48.942,11.458],[48.928,11.466],[48.906,11.473],[48.884,11.476],[48.861,11.476],[48.758,11.466],[48.731,11.468],[48.712,11.473],[48.695,11.482],[48.667,11.509],[48.634,11.554],[48.599,11.589],[48.591,11.6],[48.561,11.614],[48.486,11.589],[48.411,11.584],[48.38,11.592],[48.348,11.61],[48.308,11.614],[48.249,11.62],[48.227,11.61],[48.212,11.596],[48.165,11.532],[48.141,11.56],[48.135,11.582]],"km":168},"n|r":{"p":[[49.452,11.077],[49.391,11.116],[49.405,11.25],[49.398,11.264],[49.381,11.37],[49.327,11.543],[49.308,11.572],[49.283,11.59],[49.269,11.601],[49.244,11.626],[49.217,11.658],[49.193,11.692],[49.175,11.723],[49.163,11.757],[49.162,11.778],[49.163,11.822],[49.15,11.858],[49.139,11.871],[49.083,11.916],[49.058,11.944],[49.037,11.98],[49.022,12.019],[49.011,12.06],[49.013,12.102]],"km":100},"r|m":{"p":[[49.013,12.102],[49.056,12.107],[49.091,12.102],[48.96,12.097],[48.939,12.094],[48.919,12.087],[48.902,12.076],[48.872,12.047],[48.825,11.976],[48.759,11.901],[48.735,11.869],[48.714,11.836],[48.705,11.784],[48.693,11.746],[48.669,11.716],[48.61,11.673],[48.588,11.648],[48.561,11.614],[48.486,11.589],[48.411,11.584],[48.38,11.592],[48.348,11.61],[48.308,11.614],[48.249,11.62],[48.227,11.61],[48.212,11.596],[48.165,11.532],[48.141,11.56],[48.135,11.582]],"km":138},"wu|s":{"p":[[49.791,9.953],[49.758,9.842],[49.643,9.74],[49.613,9.711],[49.597,9.664],[49.578,9.629],[49.565,9.614],[49.533,9.587],[49.465,9.538],[49.434,9.51],[49.388,9.458],[49.372,9.442],[49.322,9.41],[49.308,9.379],[49.277,9.353],[49.265,9.351],[49.22,9.348],[49.191,9.334],[49.163,9.304],[49.136,9.287],[49.1,9.282],[49.077,9.276],[49.055,9.267],[49.013,9.244],[48.974,9.216],[48.903,9.151],[48.896,9.184],[48.875,9.187],[48.834,9.188],[48.773,9.183],[48.776,9.183]],"km":139},"mz|ma":{"p":[[49.993,8.247],[49.95,8.205],[49.924,8.183],[49.883,8.179],[49.854,8.171],[49.831,8.162],[49.817,8.154],[49.778,8.123],[49.771,8.113],[49.73,8.16],[49.699,8.189],[49.685,8.234],[49.675,8.285],[49.646,8.296],[49.6,8.295],[49.576,8.3],[49.551,8.315],[49.519,8.323],[49.458,8.338],[49.488,8.466]],"km":81},"d|ac":{"p":[[51.228,6.774],[51.203,6.728],[51.19,6.678],[51.159,6.707],[51.124,6.72],[51.096,6.728],[51.064,6.753],[51.034,6.781],[51.021,6.796],[50.985,6.849],[50.969,6.822],[50.935,6.807],[50.92,6.807],[50.892,6.683],[50.892,6.667],[50.899,6.585],[50.884,6.537],[50.847,6.483],[50.83,6.442],[50.831,6.386],[50.84,6.356],[50.845,6.332],[50.856,6.229],[50.775,6.084]],"km":104}};
+const SIZES = {S:{n:"S",d:"Brief, A4",add:0,rank:1,max:1},M:{n:"M",d:"Schuhkarton",add:3,rank:2,max:5},L:{n:"L",d:"Rucksack",add:6,rank:3,max:10}};
+const URG = {
+  express:{n:"Express",d:"in 3 Std.",mult:1.5,w:[0.6,0.3,0.1]},
+  heute:{n:"Heute",d:"bis 24 Uhr",mult:1.2,w:[0.4,0.4,0.2]},
+  morgen:{n:"Morgen",d:"bis morgen",mult:1.0,w:[0.3,0.4,0.3]},
+  flexibel:{n:"Flexibel",d:"3 Tage",mult:0.9,w:[0.2,0.4,0.4]}
+};
+const VEH = {auto:{n:"Auto",speed:88},zug:{n:"Zug",speed:115},velo:{n:"E-Bike",speed:22}};
+
+const ROUTES = [
+  {name:"Lea M.",rating:4.9,deliveries:214,punct:0.97,completion:0.99,veh:"auto",from:"k",to:"f",dep:25,space:"L",detour:15,pf:1.0},
+  {name:"Jonas K.",rating:4.7,deliveries:88,punct:0.93,completion:0.97,veh:"auto",from:"d",to:"f",dep:40,space:"M",detour:15,pf:0.95},
+  {name:"Aylin T.",rating:4.95,deliveries:41,punct:0.99,completion:1.0,veh:"zug",from:"k",to:"m",dep:35,space:"M",detour:4,pf:1.1},
+  {name:"Mehmet Y.",rating:4.8,deliveries:156,punct:0.95,completion:0.98,veh:"auto",from:"do",to:"ma",dep:75,space:"L",detour:20,pf:1.05},
+  {name:"Sophie B.",rating:4.6,deliveries:302,punct:0.91,completion:0.96,veh:"auto",from:"e",to:"s",dep:110,space:"L",detour:25,pf:0.9},
+  {name:"Elena S.",rating:5.0,deliveries:12,punct:1.0,completion:1.0,veh:"auto",from:"k",to:"f",dep:60*15,space:"M",detour:10,pf:0.9},
+  {name:"Paul H.",rating:4.7,deliveries:64,punct:0.93,completion:0.97,veh:"zug",from:"bn",to:"f",dep:60*17,space:"M",detour:4,pf:0.9},
+  {name:"Hannah S.",rating:4.85,deliveries:120,punct:0.96,completion:0.99,veh:"auto",from:"b",to:"hh",dep:30,space:"L",detour:15,pf:1.0},
+  {name:"Felix R.",rating:4.75,deliveries:77,punct:0.94,completion:0.98,veh:"zug",from:"hh",to:"b",dep:50,space:"M",detour:4,pf:1.0},
+  {name:"Emma D.",rating:4.8,deliveries:95,punct:0.96,completion:0.99,veh:"auto",from:"b",to:"l",dep:45,space:"M",detour:15,pf:1.0},
+  {name:"Mia K.",rating:4.9,deliveries:133,punct:0.97,completion:0.99,veh:"auto",from:"m",to:"n",dep:60,space:"L",detour:15,pf:1.0},
+  {name:"Ben F.",rating:4.55,deliveries:28,punct:0.89,completion:0.96,veh:"auto",from:"hh",to:"ha",dep:20,space:"L",detour:20,pf:0.9},
+  {name:"Laura P.",rating:4.9,deliveries:186,punct:0.98,completion:1.0,veh:"auto",from:"f",to:"k",dep:30,space:"L",detour:15,pf:1.0},
+  {name:"Tim A.",rating:4.75,deliveries:77,punct:0.94,completion:0.98,veh:"auto",from:"s",to:"m",dep:80,space:"L",detour:15,pf:1.0},
+  {name:"Sara L.",rating:4.8,deliveries:95,punct:0.96,completion:0.99,veh:"auto",from:"l",to:"dd",dep:40,space:"M",detour:15,pf:1.0},
+  {name:"David M.",rating:4.65,deliveries:58,punct:0.92,completion:0.97,veh:"zug",from:"d",to:"k",dep:15,space:"S",detour:3,pf:0.95},
+  {name:"Nina F.",rating:4.8,deliveries:102,punct:0.96,completion:0.99,veh:"auto",from:"hb",to:"hh",dep:55,space:"L",detour:15,pf:1.0},
+  {name:"Yusuf A.",rating:4.7,deliveries:49,punct:0.95,completion:0.98,veh:"zug",from:"f",to:"b",dep:90,space:"M",detour:4,pf:1.0},
+  {name:"Clara V.",rating:4.85,deliveries:71,punct:0.96,completion:0.99,veh:"auto",from:"m",to:"s",dep:60*16,space:"L",detour:20,pf:1.05},
+  {name:"Jana W.",rating:4.8,deliveries:91,punct:0.95,completion:0.99,veh:"auto",from:"d",to:"b",dep:60*14,space:"L",detour:20,pf:0.95},
+  {name:"Max H.",rating:4.6,deliveries:39,punct:0.92,completion:0.97,veh:"auto",from:"bn",to:"d",dep:65,space:"L",detour:15,pf:0.95}
+];
+const NOW0 = new Date();
+ROUTES.forEach((r,i)=>{
+  r.id="r"+i;r.stops=[];if(r.veh==="zug")r.detour=Math.max(r.detour,8);
+  r.depart=new Date(NOW0.getTime()+r.dep*60000);
+  r.depart.setSeconds(0,0);
+  r.depart.setMinutes(Math.ceil(r.depart.getMinutes()/5)*5);
+  r.verified=true; r.mine=false;
+});
+
+/* ---------- helpers ---------- */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const hm=d=>pad(d.getHours())+":"+pad(d.getMinutes());
+function dayWord(d){
+  const a=new Date();a.setHours(0,0,0,0);const b=new Date(d);b.setHours(0,0,0,0);
+  const diff=Math.round((b-a)/864e5);
+  if(diff===0)return "heute"; if(diff===1)return "morgen";
+  return ["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()]+" "+pad(d.getDate())+"."+pad(d.getMonth()+1)+".";
+}
+const when=d=>dayWord(d)+" "+hm(d);
+const EUR=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
+const eur=x=>EUR.format(x);
+const initials=n=>n.replace(/[^A-Za-zÀ-ÿ ]/g,"").split(" ").filter(Boolean).map(p=>p[0]).join("").slice(0,2).toUpperCase();
+function hav(a,b){
+  const A=CITIES[a],B=CITIES[b];if(a===b)return 0;
+  const R=6371,t=Math.PI/180,dLat=(B.lat-A.lat)*t,dLon=(B.lon-A.lon)*t;
+  const x=Math.sin(dLat/2)**2+Math.cos(A.lat*t)*Math.cos(B.lat*t)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+function havLL(lat1,lon1,lat2,lon2){const R=6371,t=Math.PI/180,dLat=(lat2-lat1)*t,dLon=(lon2-lon1)*t;const x=Math.sin(dLat/2)**2+Math.cos(lat1*t)*Math.cos(lat2*t)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+/* graph + shortest paths (road km = straight line x 1.2 per Autobahn segment) */
+const ADJ={};Object.keys(CITIES).forEach(k=>ADJ[k]=[]);
+EDGES.forEach(([a,b,n])=>{const e=EG[a+"|"+b];const w=e?e.km:hav(a,b)*1.25;ADJ[a].push([b,w,n]);ADJ[b].push([a,w,n]);});
+const SP={};
+function dijkstra(src){
+  if(SP[src])return SP[src];
+  const dist={},prev={},done={};Object.keys(CITIES).forEach(k=>dist[k]=Infinity);dist[src]=0;
+  for(;;){let u=null,best=Infinity;for(const k in dist)if(!done[k]&&dist[k]<best){best=dist[k];u=k;}
+    if(u===null)break;done[u]=true;ADJ[u].forEach(([v,w])=>{if(dist[u]+w<dist[v]){dist[v]=dist[u]+w;prev[v]=u;}});}
+  return SP[src]={dist,prev};
+}
+const road=(a,b)=>a===b?0:dijkstra(a).dist[b];
+function pathNodes(a,b){if(a===b)return[a];const {prev}=dijkstra(a);const out=[b];let c=b;while(c!==a){c=prev[c];if(!c)return[a,b];out.unshift(c);}return out;}
+function routeNodes(list){const out=[];for(let i=0;i<list.length-1;i++){const p=pathNodes(list[i],list[i+1]);p.forEach((k,j)=>{if(!(out.length&&j===0))out.push(k);});}return out.length?out:list.slice(0,1);}
+const ll=k=>[CITIES[k].lat,CITIES[k].lon];
+function edgeLL(a,b){const e=EG[a+"|"+b];if(e)return e.p;const r=EG[b+"|"+a];if(r)return r.p.slice().reverse();return [ll(a),ll(b)];}
+function routeLL(nodes){const out=[];for(let i=0;i<nodes.length-1;i++){edgeLL(nodes[i],nodes[i+1]).forEach((q,j)=>{if(!(out.length&&j===0))out.push(q);});}return out.length?out:[ll(nodes[0])];}
+/* example profile pictures, drawn as flat illustrations (no real people) */
+const AV_BG=["#E7E5E4","#E2E8F0","#E5E7EB","#ECE7E1","#E3E8E5","#E8E4EC"];
+const AV_SKIN=["#F1D3BC","#E2B48F","#C68B63","#8D5B41","#F5DEC9","#A86F4C"];
+const AV_HAIR=["#2B2420","#5A3A22","#171717","#8C6239","#C9A15A","#3B3B3B"];
+const AV_TOP=["#171717","#1F56B4","#525252","#2F4F3F","#6B4E3D","#A3A3A3"];
+function hashStr(t){let h=7;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;return h;}
+function avatarSVG(seed){
+  const h=hashStr(seed),pick=(a,sh)=>a[(h>>>sh)%a.length];
+  const bg=pick(AV_BG,1),sk=pick(AV_SKIN,4),hr=pick(AV_HAIR,7),tp=pick(AV_TOP,10),style=(h>>>13)%4;
+  const hair=[
+    `<path d="M30 40c0-12 8-19 18-19s18 7 18 19c-3-6-9-9-18-9s-15 3-18 9z" fill="${hr}"/>`,
+    `<path d="M28 44c0-15 9-23 20-23s20 8 20 23v22h-6V44c-3-6-8-9-14-9s-11 3-14 9v22h-6z" fill="${hr}"/>`,
+    `<path d="M31 38c1-11 8-17 17-17s16 6 17 17c-4-4-10-6-17-6s-13 2-17 6z" fill="${hr}"/><circle cx="48" cy="18" r="7" fill="${hr}"/>`,
+    `<path d="M33 34c3-8 9-12 15-12s12 4 15 12c-5-3-10-4-15-4s-10 1-15 4z" fill="${hr}"/>`][style];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${bg}"/>${style===1?hair:""}<path d="M18 96c2-17 15-26 30-26s28 9 30 26z" fill="${tp}"/><rect x="42" y="56" width="12" height="14" rx="5" fill="${sk}"/><ellipse cx="48" cy="44" rx="16" ry="18" fill="${sk}"/>${style===1?"":hair}</svg>`;
+}
+const avatarURI=seed=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(avatarSVG(seed));
+const avatarSrc=r=>r.photo||avatarURI(r.name);
+const avatarImg=(r,cls)=>`<img class="avatar${cls?" "+cls:""}" src="${avatarSrc(r)}" alt="Profilbild ${esc(r.name)}">`;
+const rand4=used=>{let c;do{c=String(1000+Math.floor(Math.random()*9000));}while(used.includes(c));used.push(c);return c;};
+function toast(title,text){const t=document.createElement("div");t.className="toast";t.innerHTML="<b>"+esc(title)+"</b>"+(text?esc(text):"");$("#toasts").appendChild(t);setTimeout(()=>t.remove(),5200);}
+function cityOptions(sel,val){sel.innerHTML=CITY_ORDER.map(k=>`<option value="${k}"${k===val?" selected":""}>${CITIES[k].n}</option>`).join("");}
+function seg(container,name,items,val,extraClass){
+  container.innerHTML=Object.entries(items).map(([k,v])=>`<input type="radio" name="${name}" id="${name}-${k}" value="${k}"${k===val?" checked":""}><label for="${name}-${k}" class="${extraClass?extraClass+k:""}">${esc(v.n)}${v.d?`<small>${esc(v.d)}</small>`:""}</label>`).join("");
+}
+const segVal=name=>{const el=$(`input[name="${name}"]:checked`);return el?el.value:null;};
+const nearestCity=(lat,lon)=>Object.keys(CITIES).reduce((best,k)=>{const d=havLL(lat,lon,CITIES[k].lat,CITIES[k].lon);return d<best[1]?[k,d]:best;},[null,Infinity])[0];
+
+/* ---------- interactive map (Leaflet, vector base map) ---------- */
+let GEO=null;
+const geoReady=fetch("geo.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(j=>(GEO=j)).catch(()=>null);
+const MAPS={};
+function baseMap(id,opt={}){
+  const el=document.getElementById(id);
+  if(!window.L){el.innerHTML='<p class="map-fallback">Die Karte konnte nicht geladen werden. Alle Funktionen gehen trotzdem über die Auswahlfelder.</p>';return null;}
+  const map=L.map(el,{zoomSnap:0.25,minZoom:5,maxZoom:11,scrollWheelZoom:opt.wheel!==false,dragging:opt.drag!==false,attributionControl:true,worldCopyJump:false});
+  map.attributionControl.setPrefix(false);
+  map.attributionControl.addAttribution('<a href="https://leafletjs.com">Leaflet</a> · Kartendaten: Natural Earth');
+  map.setMaxBounds([[44.5,1.5],[57.5,19.5]]);
+  map.fitBounds([[47.3,5.9],[55.05,15.0]]);
+  [["pBase",200],["pNet",350],["pRoute",420],["pCity",460]].forEach(([p,z])=>{map.createPane(p).style.zIndex=z;});
+  geoReady.then(g=>{
+    if(!g)return;
+    L.geoJSON(g.neighbours,{pane:"pBase",interactive:false,style:f=>({className:f.properties.de?"g-de":"g-nb"})}).addTo(map);
+    L.geoJSON(g.states,{pane:"pBase",interactive:false,style:{className:"g-state"}}).addTo(map);
+    if(g.urban)L.geoJSON(g.urban,{pane:"pBase",interactive:false,style:{className:"g-urban"}}).addTo(map);
+    L.geoJSON(g.lakes,{pane:"pBase",interactive:false,style:{className:"g-water"}}).addTo(map);
+    L.geoJSON(g.rivers,{pane:"pBase",interactive:false,style:{className:"g-river"}}).addTo(map);
+    if(g.roads)L.geoJSON(g.roads,{pane:"pNet",interactive:false,style:f=>({className:f.properties.t===1?"g-hw":"g-hw2"})}).addTo(map);
+  });
+  const cityMk={};
+  Object.keys(CITIES).forEach(k=>{
+    const c=CITIES[k];
+    const mk=L.circleMarker(ll(k),{pane:"pCity",radius:c.big?5.5:4,className:"g-city",interactive:!!opt.onCity});
+    mk.bindTooltip(c.n,{permanent:true,direction:"right",className:"city-lbl"+(c.big?"":" small"),offset:[4,0],interactive:false});
+    if(opt.onCity)mk.on("click",()=>opt.onCity(k));
+    mk.addTo(map);cityMk[k]=mk;
+  });
+  const zc=()=>el.classList.toggle("z7",map.getZoom()>=6.75);map.on("zoomend",zc);zc();
+  const overlay=L.layerGroup().addTo(map);
+  const obj={map,overlay,cityMk,el};
+  MAPS[id]=obj;
+  return obj;
+}
+function setCityClass(M,keysOn,keysMatch){
+  if(!M)return;
+  Object.entries(M.cityMk).forEach(([k,mk])=>{const e=mk.getElement();if(!e)return;e.classList.toggle("on",keysOn.includes(k));e.classList.toggle("match",!!(keysMatch&&keysMatch.includes(k))&&!keysOn.includes(k));});
+}
+const pinIcon=(txt,cls)=>L.divIcon({className:"",html:`<div class="pin ${cls||""}">${txt}</div>`,iconSize:[30,30],iconAnchor:[15,15]});
+const photoIcon=src=>L.divIcon({className:"",html:`<img class="pin-photo" src="${src}" alt="">`,iconSize:[40,40],iconAnchor:[20,20]});
+function fitKeys(M,keys,pad){if(!M||!keys.length)return;M.map.invalidateSize();M.map.fitBounds(L.latLngBounds(keys.map(ll)),{padding:[pad||60,pad||60],maxZoom:8.5});}
+/* position along a list of nodes at fraction t */
+function along(lls,t){
+  const seg=[];let total=0;
+  for(let i=0;i<lls.length-1;i++){const d=havLL(lls[i][0],lls[i][1],lls[i+1][0],lls[i+1][1]);seg.push(d);total+=d;}
+  if(!total)return{pt:lls[0],done:[lls[0]]};
+  let need=t*total;const done=[lls[0]];
+  for(let i=0;i<seg.length;i++){const a=lls[i],b=lls[i+1];
+    if(need<=seg[i]){const f=seg[i]?need/seg[i]:0;const pt=[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];done.push(pt);return{pt,done};}
+    need-=seg[i];done.push(b);}
+  return{pt:lls[lls.length-1],done};
+}
+function fitLL(M,lls,opt){if(!M||!lls.length)return;M.map.invalidateSize();M.map.fitBounds(L.latLngBounds(lls),Object.assign({padding:[60,60],maxZoom:9},opt||{}));}
+
+/* ---------- matching ---------- */
+function deadlineFor(u){
+  const n=new Date();
+  if(u==="express")return new Date(n.getTime()+180*60000);
+  if(u==="flexibel")return new Date(n.getTime()+3*864e5);
+  const d=new Date(n);d.setHours(23,59,0,0);if(u==="morgen")d.setDate(d.getDate()+1);return d;
+}
+function priceFor(km,size,urg,pf){return Math.round((5+0.12*km+SIZES[size].add)*URG[urg].mult*pf*100)/100;}
+function reliability(r){const rp=r.rating?(r.rating-3.5)/1.5:0.5;const exp=Math.min(1,r.deliveries/150);return Math.max(0,Math.min(1,0.4*rp+0.3*r.completion+0.2*r.punct+0.1*exp));}
+function findOffers(q){
+  const now=Date.now(),deadline=deadlineFor(q.urg).getTime(),out=[];
+  if(q.from===q.to)return out;
+  ROUTES.forEach(r=>{
+    if(SIZES[r.space].rank<SIZES[q.size].rank)return;
+    const ins=insertShipment(r,q.from,q.to,"q");
+    if(!ins)return;
+    if(ins.pickup.getTime()<now+10*60000)return;
+    if(ins.eta.getTime()>deadline)return;
+    const km=road(q.from,q.to);
+    out.push({route:r,pickup:ins.pickup,eta:ins.eta,detour:Math.round(ins.delta),km:Math.round(km),price:priceFor(km,q.size,q.urg,r.pf),travelMin:(ins.eta-ins.pickup)/60000,rel:reliability(r),ins});
+  });
+  if(!out.length)return out;
+  const etas=out.map(o=>o.eta.getTime()),prices=out.map(o=>o.price);
+  const eMin=Math.min(...etas),eMax=Math.max(...etas),pMin=Math.min(...prices),pMax=Math.max(...prices),w=URG[q.urg].w;
+  out.forEach(o=>{o.tempo=eMax===eMin?1:1-(o.eta.getTime()-eMin)/(eMax-eMin);o.cheap=pMax===pMin?1:1-(o.price-pMin)/(pMax-pMin);o.score=w[0]*o.tempo+w[1]*o.rel+w[2]*o.cheap;});
+  const fastest=out.reduce((a,b)=>a.eta<=b.eta?a:b),reliable=out.reduce((a,b)=>a.rel>=b.rel?a:b),best=out.reduce((a,b)=>a.score>=b.score?a:b);
+  out.forEach(o=>{o.badges=[];if(o===best)o.badges.push("Beste Wahl");if(o===fastest)o.badges.push("Am schnellsten");if(o===reliable)o.badges.push("Am zuverlässigsten");});
+  return out;
+}
+
+/* ---------- address search (prototype: local list; production: geocoding API) ---------- */
+const TOWN_LIST = [["Berlin",52.5238,13.3996],["Stuttgart",48.78,9.2],["Frankfurt",50.1,8.675],["Mannheim",49.5004,8.47],["Hamburg",53.552,9.9981],["Essen",51.45,7.0166],["Duisburg",51.43,6.75],["München",48.1319,11.573],["Düsseldorf",51.2204,6.78],["Köln",50.932,6.9481],["Wuppertal",51.25,7.17],["Saarbrücken",49.2504,6.97],["Nürnberg",49.45,11.08],["Bremen",53.08,8.8],["Hannover",52.367,9.7167],["Bonn",50.7205,7.08],["Dresden",51.05,13.75],["Wiesbaden",50.0804,8.25],["Dortmund",51.53,7.45],["Leipzig",51.3354,12.41],["Heidelberg",49.42,8.7],["Karlsruhe",49,8.4],["Augsburg",48.35,10.9],["Bielefeld",52.03,8.53],["Koblenz",50.3505,7.6],["Chemnitz",50.83,12.92],["Kassel",51.3,9.5],["Münster",51.9704,7.62],["Kiel",54.3304,10.13],["Freiburg",48.0004,7.8699],["Braunschweig",52.25,10.5],["Fürth",49.47,11],["Lübeck",53.8704,10.67],["Osnabrück",52.2804,8.05],["Magdeburg",52.1304,11.62],["Potsdam",52.4004,13.07],["Erfurt",50.9701,11.03],["Rostock",54.0704,12.15],["Mainz",49.9825,8.2732],["Ulm",48.4004,10],["Würzburg",49.8004,9.95],["Oldenburg",53.13,8.22],["Regensburg",49.0204,12.12],["Ingolstadt",48.7704,11.45],["Göttingen",51.5204,9.92],["Bremerhaven",53.5504,8.58],["Cottbus",51.7704,14.33],["Jena",50.9304,11.58],["Gera",50.8704,12.07],["Flensburg",54.7837,9.4333],["Schwerin",53.6333,11.4167],["Rosenheim",47.8503,12.1333],["Gießen",50.5837,8.65],["Stralsund",54.3004,13.1],["Coburg",50.2666,10.9666],["Hof",50.317,11.9167],["Emden",53.3667,7.2167],["Passau",48.5755,13.4412],["Leverkusen",51.0459,6.9853],["Neuss",51.1981,6.685],["Krefeld",51.3388,6.5853],["Mönchengladbach",51.1805,6.4428],["Bochum",51.4818,7.2162],["Gelsenkirchen",51.5177,7.0857],["Bergisch Gladbach",50.9918,7.1365],["Siegburg",50.7998,7.2075],["Troisdorf",50.8161,7.1556],["Brühl",50.829,6.9047],["Hürth",50.8771,6.876],["Darmstadt",49.8728,8.6512],["Offenbach am Main",50.0956,8.7761],["Hanau",50.1264,8.9283],["Bad Homburg",50.2268,8.6182],["Limburg an der Lahn",50.3836,8.0503],["Montabaur",50.4375,7.8258],["Siegen",50.8748,8.0243],["Ratingen",51.2973,6.8493],["Solingen",51.1652,7.0671],["Remscheid",51.1787,7.1897],["Hagen",51.3671,7.4633],["Herne",51.5369,7.2009],["Oberhausen",51.4963,6.8638],["Mülheim an der Ruhr",51.4275,6.8825],["Rüsselsheim",49.9897,8.412]];
+const STREETS = {"k":["Ehrenstraße","Hohe Straße","Schildergasse","Aachener Straße","Venloer Straße","Zülpicher Straße","Severinstraße","Neusser Straße","Bonner Straße","Breite Straße","Luxemburger Straße","Subbelrather Straße"],"d":["Königsallee","Schadowstraße","Graf-Adolf-Straße","Kaiserswerther Straße","Bilker Allee","Flinger Straße","Rethelstraße","Nordstraße"],"bn":["Poppelsdorfer Allee","Kaiserstraße","Adenauerallee","Endenicher Allee","Sternstraße","Bonner Talweg"],"f":["Kettenhofweg","Zeil","Berger Straße","Schweizer Straße","Mainzer Landstraße","Leipziger Straße","Eschersheimer Landstraße","Hanauer Landstraße","Oeder Weg"],"b":["Kurfürstendamm","Friedrichstraße","Karl-Marx-Allee","Schönhauser Allee","Torstraße","Sonnenallee"],"hh":["Mönckebergstraße","Jungfernstieg","Eppendorfer Weg","Schanzenstraße","Osterstraße"],"m":["Leopoldstraße","Maximilianstraße","Sendlinger Straße","Rosenheimer Straße","Schellingstraße"],"s":["Königstraße","Tübinger Straße","Calwer Straße"],"l":["Karl-Liebknecht-Straße","Grimmaische Straße"],"do":["Westenhellweg","Kaiserstraße"],"e":["Rüttenscheider Straße","Kettwiger Straße"],"mz":["Große Bleiche","Kaiserstraße"],"ko":["Löhrstraße","Schloßstraße"],"ac":["Pontstraße","Theaterstraße"],"n":["Königstraße","Fürther Straße"],"ha":["Lister Meile","Georgstraße"]};
+const fold=t=>t.toLowerCase().replace(/ß/g,"ss").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/strasse\b|str\.(?=\s|$|,)|\bstr\b/g,"str").replace(/\s+/g," ").trim();
+const PLACES=(()=>{
+  const out=[],seen=new Set();
+  Object.keys(CITIES).forEach(k=>{out.push({n:CITIES[k].n,lat:CITIES[k].lat,lon:CITIES[k].lon,key:k,net:true});seen.add(fold(CITIES[k].n));});
+  TOWN_LIST.forEach(([n,lat,lon])=>{if(seen.has(fold(n)))return;seen.add(fold(n));out.push({n,lat,lon,key:nearestCity(lat,lon),net:false});});
+  return out;
+})();
+function suggestAddr(q){
+  const raw=q.trim();if(fold(raw).length<2)return [];
+  const fq=fold(raw);
+  const num=((raw.match(/(?:^|\s)(\d{1,4}\s?[a-zA-Z]?)(?=\s|,|$)/)||[])[1]||"").replace(/\s/,"");
+  // place: text after the last comma (prefix allowed), otherwise a whole word in the text
+  let place=null,streetRaw=raw;
+  const parts=raw.split(",");
+  if(parts.length>1){
+    const cp=fold(parts[parts.length-1].replace(/\b\d{5}\b/,""));
+    if(cp){const c=PLACES.filter(pl=>fold(pl.n).startsWith(cp)).sort((a,b)=>(b.net-a.net)||a.n.length-b.n.length);place=c[0]||null;}
+    streetRaw=parts.slice(0,-1).join(",");
+  }else{
+    let best="";
+    PLACES.forEach(pl=>{const f=fold(pl.n);if(new RegExp("(^|\\s)"+f.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|\\s)").test(fq)&&f.length>best.length){best=f;place=pl;}});
+    if(place)streetRaw=raw.replace(new RegExp(place.n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),"");
+  }
+  streetRaw=streetRaw.replace(/\b\d{5}\b/,"").replace(num?new RegExp("(^|\\s)"+num+"(?=\\s|$)"):/\u0000/,"").replace(/[,\s]+/g," ").trim();
+  const rest=fold(streetRaw);
+  const res=[];
+  const add=o=>{if(!res.some(x=>x.label===o.label))res.push(o);};
+  // known streets
+  if(rest.length>=2)Object.entries(STREETS).forEach(([k,list])=>{
+    if(place&&place.key!==k)return;
+    list.forEach(st=>{const fs=fold(st);if(fs.startsWith(rest)||fs.includes(rest))add({label:`${st}${num?" "+num:""}, ${CITIES[k].n}`,sub:"Straße",key:k,score:fs.startsWith(rest)?0:1});});
+  });
+  // places by name (only when no place part is given yet)
+  if(!place)PLACES.forEach(pl=>{const f=fold(pl.n);
+    if(f.startsWith(fq)||(fq.length>=3&&f.includes(fq)))add({label:pl.n,sub:pl.net?"Ort":`Ort, Route über ${CITIES[pl.key].n}`,key:pl.key,score:f.startsWith(fq)?0.5:1.5});});
+  // any address in a recognised place
+  if(place&&rest.length>=3&&!res.some(x=>x.sub==="Straße"))
+    add({label:`${streetRaw.replace(/^./,c=>c.toUpperCase())}${num?" "+num:""}, ${place.n}`,sub:place.net?"Adresse":`Adresse, Route über ${CITIES[place.key].n}`,key:place.key,score:0.2});
+  if(place&&!rest)add({label:place.n,sub:place.net?"Ort":`Ort, Route über ${CITIES[place.key].n}`,key:place.key,score:0.1});
+  return res.sort((a,b)=>a.score-b.score).slice(0,6);
+}
+let comboSeq=0;
+function addrCombo(input,select,onPick){
+  const id="cb"+(++comboSeq);
+  const wrap=document.createElement("div");wrap.className="combo";input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+  const list=document.createElement("ul");list.className="combo-list";list.id=id+"-list";list.setAttribute("role","listbox");list.hidden=true;wrap.appendChild(list);
+  const err=document.createElement("p");err.className="combo-err";err.hidden=true;wrap.appendChild(err);
+  input.setAttribute("role","combobox");input.setAttribute("aria-autocomplete","list");input.setAttribute("aria-expanded","false");input.setAttribute("aria-controls",list.id);input.autocomplete="off";input.spellcheck=false;
+  let items=[],active=-1,picked=input.value;
+  const close=()=>{list.hidden=true;input.setAttribute("aria-expanded","false");input.removeAttribute("aria-activedescendant");active=-1;};
+  const render=()=>{
+    if(!items.length){close();return;}
+    list.innerHTML=items.map((it,i)=>`<li role="option" id="${id}-o${i}" aria-selected="${i===active}" data-i="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span><b>${esc(it.label)}</b><small>${esc(it.sub)}</small></span></li>`).join("");
+    list.hidden=false;input.setAttribute("aria-expanded","true");
+    if(active>=0)input.setAttribute("aria-activedescendant",`${id}-o${active}`);else input.removeAttribute("aria-activedescendant");
+  };
+  const choose=it=>{
+    input.value=it.label;picked=it.label;err.hidden=true;input.removeAttribute("aria-invalid");close();
+    select.value=it.key;
+    select.dispatchEvent(new Event("input",{bubbles:true}));select.dispatchEvent(new Event("change",{bubbles:true}));
+    if(onPick)onPick(it);
+  };
+  input.addEventListener("input",()=>{items=suggestAddr(input.value);active=items.length?0:-1;render();});
+  input.addEventListener("focus",()=>{input.select();});
+  input.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();if(list.hidden){items=suggestAddr(input.value);active=0;render();return;}active=Math.min(items.length-1,active+1);render();}
+    else if(e.key==="ArrowUp"){e.preventDefault();active=Math.max(0,active-1);render();}
+    else if(e.key==="Enter"){if(!list.hidden&&items[active]){e.preventDefault();choose(items[active]);}}
+    else if(e.key==="Escape"){if(!list.hidden){e.preventDefault();close();}}
+  });
+  list.addEventListener("mousedown",e=>{const li=e.target.closest("li");if(li){e.preventDefault();choose(items[+li.dataset.i]);}});
+  input.addEventListener("blur",()=>{
+    setTimeout(close,0);
+    if(input.value===picked)return;
+    const sug=suggestAddr(input.value);
+    if(sug.length)choose(sug[0]);
+    else{err.textContent="Adresse nicht gefunden. Ergänze den Ort, z. B. „Hauptstraße 5, Köln“.";err.hidden=false;input.setAttribute("aria-invalid","true");}
+  });
+  return {set:(label)=>{input.value=label;picked=label;err.hidden=true;input.removeAttribute("aria-invalid");}};
+}
+
+/* ---------- multi-stop planning ----------
+   Every courier route keeps an ordered list of stops (pick-ups and drop-offs).
+   A new shipment is inserted at the cheapest pair of positions (pick before drop) that keeps
+   the extra distance within the courier's detour budget, the arrival before "spätestens da",
+   promised times of shipments already on board within 20 minutes, and the load within capacity. */
+const STOP_KM={auto:4,zug:2,velo:1.5}, STOP_MIN=5, CAP={S:2,M:3,L:4}, SLIP_MIN=20;
+function planSeq(r,stops){
+  const sp=VEH[r.veh].speed;let km=0,t=r.depart.getTime(),prev=r.from;const times=[];
+  stops.forEach(st=>{const d=road(prev,st.city)+STOP_KM[r.veh];km+=d;t+=d/sp*3600000+STOP_MIN*60000;times.push(new Date(t));prev=st.city;});
+  const d=road(prev,r.to);km+=d;t+=d/sp*3600000;
+  return {km,times,end:new Date(t)};
+}
+function insertShipment(r,a,b,ship){
+  r.stops=r.stops||[];
+  const n=r.stops.length,cur=planSeq(r,r.stops),base=road(r.from,r.to);let best=null;
+  for(let i=0;i<=n;i++)for(let j=i;j<=n;j++){
+    const st=r.stops.slice();st.splice(j,0,{type:"drop",city:b,ship});st.splice(i,0,{type:"pick",city:a,ship});
+    const pl=planSeq(r,st);
+    if(pl.km-base>r.detour+0.5)continue;
+    if(r.latest&&pl.end>r.latest)continue;
+    let load=0,ok=true;
+    st.forEach((x,k)=>{load+=x.type==="pick"?1:-1;if(load>CAP[r.space])ok=false;if(x.promised&&pl.times[k]-x.promised>SLIP_MIN*60000)ok=false;});
+    if(!ok)continue;
+    const delta=pl.km-cur.km;
+    if(!best||delta<best.delta-0.01){
+      const pi=st.findIndex(x=>x.ship===ship&&x.type==="pick"),di=st.findIndex(x=>x.ship===ship&&x.type==="drop");
+      best={stops:st,plan:pl,delta,pi,di,pickup:pl.times[pi],eta:pl.times[di],endDelta:(pl.end-cur.end)/60000,used:pl.km-base};
+    }
+  }
+  return best;
+}
+function commitPlan(r,ins,ship,label,mine){
+  r.stops=ins.stops.map((x,k)=>Object.assign({},x,x.ship===ship?{ship,label,mine:!!mine}:{} ,{promised:ins.plan.times[k]}));
+}
+const routeStopsNodes=(r,stops)=>routeNodes([r.from,...(stops||r.stops||[]).map(x=>x.city),r.to]);
+function preloadStops(){
+  [["Jonas K.","d","k","Paket M von Nils"],["Aylin T.","k","f","Brief von Kanzlei Weber"],["Mehmet Y.","do","k","Paket S von Ida"],["Hannah S.","b","hh","Paket L von Ole"]].forEach(([n,a,b,label],i)=>{
+    const r=ROUTES.find(x=>x.name===n);if(!r)return;const ins=insertShipment(r,a,b,"pre"+i);if(ins)commitPlan(r,ins,"pre"+i,label,false);
+  });
+}
+
+/* ---------- state + routing ---------- */
+const state={query:{from:"k",to:"f",size:"M",urg:"heute"},sort:"best",offers:[],bookings:[],current:null,mePhoto:null};
+const VIEWS=["start","senden","mitnehmen","auftrag"];
+function show(){
+  let v=(location.hash||"#start").slice(1);if(!VIEWS.includes(v))v="start";
+  VIEWS.forEach(n=>$("#v-"+n).classList.toggle("active",n===v));
+  $$("nav.main a").forEach(a=>{if(a.dataset.nav===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
+  window.scrollTo(0,0);
+  if(v==="start")setTimeout(()=>drawHero(true),30);
+  if(v==="senden"){renderOffers();setTimeout(()=>{drawSendMap(true);},30);}
+  if(v==="mitnehmen")setTimeout(()=>drawCourierMap(true),30);
+  if(v==="auftrag")renderOrder(true);
+}
+window.addEventListener("hashchange",show);
+
+/* ---------- START ---------- */
+function drawHero(fit){
+  const M=MAPS.heroMap;
+  const f=$("#h-from").value,t=$("#h-to").value,u=$("#h-urg").value;
+  const offers=findOffers({from:f,to:t,size:"M",urg:u});
+  $("#heroChipS").textContent=f===t?"Wähle zwei Orte":`${CITIES[f].n} → ${CITIES[t].n}`;
+  $("#heroChipT").textContent=f===t?"":`${offers.length} ${offers.length===1?"Mitnehmer":"Mitnehmer"}${offers.length?" ab "+eur(Math.min(...offers.map(o=>o.price))):""}`;
+  if(!M)return;
+  M.overlay.clearLayers();
+  if(f===t){setTimeout(()=>setCityClass(M,[f]),0);return;}
+  const lls=routeLL(routeNodes([f,t]));
+  offers.forEach(o=>L.polyline(routeLL(routeStopsNodes(o.route,o.ins.stops)),{pane:"pRoute",className:"r-courier",interactive:true}).bindTooltip(`${o.route.name}: ${CITIES[o.route.from].n} → ${CITIES[o.route.to].n}, Abholung ${when(o.pickup)}, ${eur(o.price)}`,{sticky:true}).addTo(M.overlay));
+  L.polyline(lls,{pane:"pRoute",className:"r-parcel",interactive:false}).addTo(M.overlay);
+  L.marker(ll(f),{icon:pinIcon("A"),keyboard:false}).bindTooltip("Abholung in "+CITIES[f].n).addTo(M.overlay);
+  L.marker(ll(t),{icon:pinIcon("B","b"),keyboard:false}).bindTooltip("Zustellung in "+CITIES[t].n).addTo(M.overlay);
+  if(offers[0]){const o=offers[0];const pos=along(lls,0.35).pt;L.marker(pos,{icon:photoIcon(avatarSrc(o.route)),keyboard:false}).bindTooltip(`${o.route.name} fährt ${when(o.route.depart)} los`).addTo(M.overlay);}
+  setTimeout(()=>setCityClass(M,[f,t]),0);
+  if(fit){M.map.invalidateSize();const wide=window.innerWidth>760;
+    M.map.fitBounds(L.latLngBounds(lls),wide?{paddingTopLeft:[520,140],paddingBottomRight:[80,60],maxZoom:9}:{padding:[40,40],maxZoom:9});}
+}
+let heroPick="from";
+function initStart(){
+  cityOptions($("#h-from"),"k");cityOptions($("#h-to"),"f");
+  const hcF=addrCombo($("#hf-addr"),$("#h-from")),hcT=addrCombo($("#ht-addr"),$("#h-to"));
+  baseMap("heroMap",{wheel:false,onCity:k=>{
+    if(heroPick==="from"){$("#h-from").value=k;hcF.set(CITIES[k].n);heroPick="to";}else{$("#h-to").value=k;hcT.set(CITIES[k].n);heroPick="from";}
+    drawHero(true);
+  }});
+  ["#h-from","#h-to","#h-urg"].forEach(sel=>$(sel).addEventListener("change",()=>drawHero(sel!=="#h-urg")));
+  drawHero(true);
+  $("#heroForm").addEventListener("submit",e=>{e.preventDefault();setTimeout(()=>{state.query.from=$("#h-from").value;state.query.to=$("#h-to").value;state.query.fromLabel=$("#hf-addr").value;state.query.toLabel=$("#ht-addr").value;state.query.urg=$("#h-urg").value;syncSendForm();location.hash="senden";},0);});
+  document.addEventListener("click",e=>{const b=e.target.closest("[data-scroll]");if(b){const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:"smooth"});}});
+  initShow();
+}
+
+/* ---------- app preview slideshow ---------- */
+const SB=`<div class="sbar"><span>20:07</span><span>5G</span></div>`;
+const NAV=a=>`<div class="a-nav">${["Senden","Mitnehmen","Aufträge","Profil"].map(x=>`<span class="${x===a?"on":""}"><i></i>${x}</span>`).join("")}</div>`;
+const AV=(n,cls)=>`<img class="a-av${cls?" "+cls:""}" src="${avatarURI(n)}" alt="">`;
+const CHK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+function phoneMap(h,prog){
+  return `<svg viewBox="0 0 276 ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <rect width="276" height="${h}" fill="#E8EDF1"/>
+  <path d="M-10 ${h*.18} C60 ${h*.24},100 ${h*.08},170 ${h*.16} S250 ${h*.12},290 ${h*.22}" fill="none" stroke="#C8D5DF" stroke-width="6"/>
+  <rect x="150" y="${h*.62}" width="90" height="${h*.18}" rx="20" fill="#EFEFEF"/><rect x="18" y="${h*.12}" width="80" height="${h*.16}" rx="18" fill="#EFEFEF"/>
+  <path d="M30 -10 L96 ${h+10}" stroke="#DEDEDE" stroke-width="3"/><path d="M-10 ${h*.6} L290 ${h*.45}" stroke="#DEDEDE" stroke-width="3"/><path d="M210 -10 L176 ${h+10}" stroke="#C4C4C4" stroke-width="3"/>
+  <path d="M56 ${h*.2} C80 ${h*.32},110 ${h*.42},132 ${h*.5} S190 ${h*.66},214 ${h*.78}" fill="none" stroke="#1F56B4" stroke-width="5" stroke-linecap="round"/>
+  ${prog?`<path d="M56 ${h*.2} C80 ${h*.32},110 ${h*.42},132 ${h*.5}" fill="none" stroke="#171717" stroke-width="5" stroke-linecap="round"/>`:""}
+  <circle cx="56" cy="${h*.2}" r="7" fill="#171717" stroke="#fff" stroke-width="2.5"/><rect x="207" y="${h*.78-7}" width="14" height="14" fill="#fff" stroke="#171717" stroke-width="3"/>
+  <text x="68" y="${h*.2-8}" font-size="11" font-weight="600" font-family="Figtree,Arial" fill="#171717">Köln</text><text x="160" y="${h*.78+22}" font-size="11" font-weight="600" font-family="Figtree,Arial" fill="#171717">Frankfurt</text>
+  </svg>`;
+}
+const PHOTO_PIN=(x,y,n)=>`<img src="${avatarURI(n)}" alt="" style="position:absolute;left:${x}px;top:${y}px;width:36px;height:36px;border-radius:50%;border:3px solid #1F56B4;z-index:2">`;
+const SLIDES=[
+  {t:"Startbildschirm mit Karte",d:"Die App öffnet mit der Karte. Oben tippst du die Adresse ein, Vorschläge erscheinen schon nach wenigen Buchstaben.",html:`${SB}<div class="a-map full">${phoneMap(620,false)}</div>${PHOTO_PIN(104,250,"Lea M.")}${PHOTO_PIN(170,170,"Jonas K.")}
+    <div class="scr-body"><div class="a-float"><div class="a-field"><span class="mk-a" style="background:#171717"></span><div><small>Abholen</small>Ehrenstraße 12, Köln</div></div><div class="a-field"><span class="mk-b" style="background:#171717"></span><div><small>Zustellen</small>Kettenh<span style="display:inline-block;width:1.5px;height:14px;background:#1F56B4;vertical-align:-2px"></span></div></div>
+    <div class="a-sugg">${[["Kettenhofweg 30, Frankfurt","Straße"],["Kettenhofweg, Frankfurt","Straße"],["Kettwiger Straße, Essen","Straße"]].map(([a,b])=>`<div><svg viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.5"><path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span><b>${a}</b><small>${b}</small></span></div>`).join("")}</div></div>
+    <div class="a-sheet"><div class="a-grab"></div><b style="font-size:15px">In deiner Nähe unterwegs</b><div class="a-sub">12 Mitnehmer fahren heute ab Köln</div></div></div>${NAV("Senden")}`},
+  {t:"Passende Mitnehmer",d:"Wer heute in deine Richtung fährt, mit Profilbild, Ankunftszeit und dem Preis, den der Mitnehmer festgelegt hat.",html:`${SB}<div class="scr-body"><div class="a-title" style="font-size:18px">Köln → Frankfurt</div><div class="a-map">${phoneMap(148,false)}</div>
+    <div class="a-card sel">${AV("Lea M.")}<div><b>Lea M.</b><div class="m">4,9 · Auto · an 22:54</div><span class="a-tag">Beste Wahl</span></div><div class="p">35,95 €</div></div>
+    <div class="a-card">${AV("Aylin T.")}<div><b>Aylin T.</b><div class="m">4,95 · Zug · an 22:35</div><span class="a-tag">Am schnellsten</span></div><div class="p">39,55 €</div></div>
+    <div class="a-card">${AV("Jonas K.")}<div><b>Jonas K.</b><div class="m">4,7 · Auto · an 23:38</div></div><div class="p">34,16 €</div></div></div>`},
+  {t:"Buchen und bezahlen",d:"Abholung an deiner Haustür, fester Preis. Bezahlt wird mit PayPal, Apple Pay, Google Pay, Kreditkarte oder bar.",html:`${SB}<div class="scr-body">
+    <div style="display:flex;gap:12px;align-items:center">${AV("Lea M.","lg")}<div><div class="a-title" style="font-size:20px">Lea M.</div><div class="a-sub">4,9 von 5 · 214 Zustellungen</div><span class="a-tag" style="background:#E7F3EC;color:#16794A">Ausweis geprüft</span></div></div>
+    <dl class="a-kv"><dt>Abholung</dt><dd>Ehrenstraße 12, 20:35</dd><dt>Zustellung</dt><dd>Kettenhofweg 30, ca. 22:54</dd><dt>Gesamt</dt><dd>37,44 €</dd></dl>
+    <div class="a-list">${[["PayPal",1],["Apple Pay",0],["Google Pay",0],["Kreditkarte",0],["Bar bei Abholung",0]].map(([n,on])=>`<div class="a-li"><b style="font-weight:500">${n}</b><span class="a-radio${on?" on":""}"></span></div>`).join("")}</div>
+    <div class="a-btn">Zahlungspflichtig buchen</div></div>`},
+  {t:"Live verfolgen",d:"Karte, Ankunftszeit und ein Klick zum Mitnehmer, bis die Sendung an der Haustür ist.",html:`${SB}<div class="a-map full">${phoneMap(620,true)}</div>${PHOTO_PIN(114,292,"Lea M.")}
+    <div class="scr-body"><div class="a-sheet"><div class="a-grab"></div><div class="a-row"><div><b style="font-size:15px">Lea ist unterwegs</b><div class="a-sub">Ankunft ca. 22:39 · noch 48 min</div></div>${AV("Lea M.")}</div>
+    <div class="a-prog"><i></i></div><div class="a-row"><div class="a-btn ghost" style="flex:1;padding:8px">Nachricht</div><div class="a-btn ghost" style="flex:1;padding:8px">Anrufen</div></div></div></div>`},
+  {t:"Profilbild hinzufügen",d:"Vor der ersten Fahrt fragt die App nach einem Foto, damit man sich an der Haustür erkennt.",html:`${SB}<div class="scr-body"><div class="a-title">Dein Profilbild</div><div class="a-sub">Absender sehen es, bevor sie buchen</div>
+    <div class="a-photo"><div class="ring"><img src="${avatarURI("Max S. Beispiel")}" alt=""></div><span class="a-sub">Beispiel</span></div>
+    <div class="a-tips"><div>${CHK}Gesicht gut sichtbar</div><div>${CHK}Ohne Sonnenbrille</div><div>${CHK}Ruhiger Hintergrund</div></div>
+    <div class="a-btn">Foto aufnehmen</div><div class="a-btn ghost">Aus Galerie wählen</div></div>`},
+  {t:"Route und Preis festlegen",d:"Mitnehmer tragen ihre Fahrt ein und bestimmen selbst, was eine Mitnahme kostet.",html:`${SB}<div class="scr-body"><div class="a-title">Deine nächste Fahrt</div>
+    <div class="a-field"><span class="mk-a" style="background:#171717"></span><div><small>Start</small>Düsseldorf</div></div>
+    <div class="a-field"><span class="mk-b" style="background:#171717"></span><div><small>Ziel</small>Frankfurt</div></div>
+    <div class="a-field" style="justify-content:space-between"><div><small>Abfahrt</small>Heute, 20:30</div><div style="text-align:right"><small>Umweg bis</small>15 km</div></div>
+    <div class="a-field" style="justify-content:space-between;background:#fff;box-shadow:inset 0 0 0 2px #171717"><div><small>Dein Preis, Paket M</small>32,00 €</div><div style="text-align:right"><small>Du bekommst</small>25,60 €</div></div>
+    <div class="a-sub">Vorschlag für 230 km: 30,56 €</div>
+    <div class="a-btn">Route veröffentlichen</div></div>${NAV("Mitnehmen")}`},
+  {t:"Stopps unterwegs",d:"Mehrere Sendungen auf einer Fahrt, abgegeben unterwegs. Neue Anfragen fügt die App an der günstigsten Stelle in die Route ein.",html:`${SB}<div class="scr-body"><div class="a-title" style="font-size:18px">Heute, Düsseldorf → Frankfurt</div><div class="a-map">${phoneMap(148,false)}</div>
+    <div class="a-list">${[["20:30","Start Düsseldorf",""],["20:58","1 Abholen Köln","Paket M von Nils"],["21:31","2 Abgeben Bonn","Paket M von Nils"],["22:20","3 Abholen Koblenz","Brief von Greta"],["23:02","4 Abgeben Mainz","Brief von Greta"],["23:25","Ziel Frankfurt",""]].map(([t,a,b])=>`<div class="a-li"><span style="font-variant-numeric:tabular-nums">${t}</span><b style="font-weight:500;flex:1;margin-left:12px">${a}<br><span style="font-weight:400">${b}</span></b></div>`).join("")}</div>
+    <div class="a-card" style="grid-template-columns:1fr auto"><div><b>Neue Anfrage auf deinem Weg</b><div class="m">Bonn → Mainz · +6 km · +8 min</div></div><div class="p">14,20 €</div></div></div>${NAV("Mitnehmen")}`},
+  {t:"Verdienen",d:"Nach jeder Zustellung landet das Geld automatisch auf deinem Konto.",html:`${SB}<div class="scr-body"><div class="a-sub">Diese Woche</div><div class="a-big">186,40 €</div><div class="a-sub">7 Zustellungen · +42,10 € ggü. Vorwoche</div>
+    <div class="a-bars" aria-hidden="true"><i style="height:30%"></i><i style="height:55%"></i><i style="height:20%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:100%" class="now"></i><i style="height:12%"></i></div>
+    <div class="a-row a-sub" style="font-size:11px"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+    <div class="a-list"><div class="a-li"><span>Sa · Köln → Frankfurt</span><b>+28,76 €</b></div><div class="a-li"><span>Fr · Bonn → Köln</span><b>+12,30 €</b></div><div class="a-li"><span>Do · Düsseldorf → Mainz</span><b>+31,05 €</b></div></div>
+    <div class="a-btn ghost" style="margin-top:auto">Auszahlungen ansehen</div></div>${NAV("Profil")}`}
+];
+const ICON_PAUSE=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/></svg>`;
+const ICON_PLAY=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>`;
+function initShow(){
+  const track=$("#showTrack"),steps=$("#showSteps"),dots=$("#showDots");
+  track.innerHTML=SLIDES.map((s,i)=>`<div class="scr" role="group" aria-roledescription="Bildschirm" aria-label="${i+1} von ${SLIDES.length}: ${esc(s.t)}" aria-hidden="${i!==0}">${s.html}</div>`).join("");
+  steps.innerHTML=SLIDES.map((s,i)=>`<li><button type="button" role="tab" id="st-${i}" aria-selected="${i===0}" data-go="${i}"><span class="n">${i+1}</span><b>${esc(s.t)}</b><span class="d">${esc(s.d)}</span><span class="show-bar"><i></i></span></button></li>`).join("");
+  dots.innerHTML=SLIDES.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("");
+  let idx=0,playing=!window.matchMedia("(prefers-reduced-motion: reduce)").matches,hover=false,startT=Date.now();
+  const DUR=5600;
+  const go=i=>{idx=(i+SLIDES.length)%SLIDES.length;startT=Date.now();
+    track.style.transform=`translateX(-${idx*100}%)`;
+    $$(".scr",track).forEach((el,j)=>el.setAttribute("aria-hidden",String(j!==idx)));
+    $$("[role=tab]",steps).forEach((b,j)=>{b.setAttribute("aria-selected",String(j===idx));const bar=b.querySelector(".show-bar i");if(bar)bar.style.width="0";});
+    $$("i",dots).forEach((d,j)=>d.classList.toggle("on",j===idx));
+    $("#showCaption").innerHTML=`<b>${esc(SLIDES[idx].t)}</b><br><span class="muted">${esc(SLIDES[idx].d)}</span>`;
+  };
+  steps.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(+b.dataset.go);});
+  steps.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowRight"){e.preventDefault();go(idx+1);$("#st-"+idx).focus();}if(e.key==="ArrowUp"||e.key==="ArrowLeft"){e.preventDefault();go(idx-1);$("#st-"+idx).focus();}});
+  $("#showPrev").addEventListener("click",()=>go(idx-1));
+  $("#showNext").addEventListener("click",()=>go(idx+1));
+  const pb=$("#showPlay");
+  const setPlay=p=>{playing=p;pb.innerHTML=p?ICON_PAUSE:ICON_PLAY;pb.setAttribute("aria-label",p?"Diashow anhalten":"Diashow abspielen");startT=Date.now();};
+  pb.addEventListener("click",()=>setPlay(!playing));setPlay(playing);
+  const show=$("#show");show.addEventListener("mouseenter",()=>hover=true);show.addEventListener("mouseleave",()=>{hover=false;startT=Date.now();});
+  let sx=null;const dev=$(".device");
+  dev.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;},{passive:true});
+  dev.addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)go(idx+(dx<0?1:-1));sx=null;});
+  setInterval(()=>{
+    const bar=$(`#st-${idx} .show-bar i`);
+    if(!playing||hover||!$("#v-start").classList.contains("active")){startT=Date.now()-((bar&&parseFloat(bar.style.width)||0)/100*DUR);return;}
+    const p=Math.min(1,(Date.now()-startT)/DUR);if(bar)bar.style.width=(p*100)+"%";
+    if(p>=1)go(idx+1);
+  },100);
+  go(0);
+}
+
+/* ---------- SEND ---------- */
+let sendLayers={courier:[]},pinA=null,pinB=null;const sendCombo={};
+function initSend(){
+  cityOptions($("#s-from"),state.query.from);cityOptions($("#s-to"),state.query.to);
+  sendCombo.f=addrCombo($("#s-faddr"),$("#s-from"),it=>{state.query.fromLabel=it.label;});
+  sendCombo.t=addrCombo($("#s-taddr"),$("#s-to"),it=>{state.query.toLabel=it.label;});
+  seg($("#s-size"),"ssize",SIZES,state.query.size);
+  seg($("#s-urg"),"surg",URG,state.query.urg,"u-");
+  const upd=()=>{readSendForm();renderOffers();drawSendMap(true);};
+  $("#sendForm").addEventListener("submit",e=>{e.preventDefault();upd();});
+  $("#sendForm").addEventListener("change",upd);
+  $("#sortTabs").addEventListener("click",e=>{const b=e.target.closest("button[data-sort]");if(!b)return;state.sort=b.dataset.sort;$$("#sortTabs button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderOffers();});
+  $("#offers").addEventListener("click",e=>{
+    const b=e.target.closest("[data-book]");if(b){openBooking(+b.dataset.book);return;}
+    const u=e.target.closest("[data-urg]");if(u){state.query.urg=u.dataset.urg;syncSendForm();renderOffers();drawSendMap(false);}
+  });
+  $("#offers").addEventListener("mouseover",e=>{const c=e.target.closest(".offer");highlightOffer(c?+c.dataset.idx:null);});
+  $("#offers").addEventListener("mouseleave",()=>highlightOffer(null));
+  $("#offers").addEventListener("focusin",e=>{const c=e.target.closest(".offer");highlightOffer(c?+c.dataset.idx:null);});
+  const M=baseMap("sendMap",{onCity:k=>{
+    const mode=segVal("pickmode");
+    if(mode==="from"){state.query.from=k;state.query.fromLabel=CITIES[k].n;$("#pm-to").checked=true;}else{state.query.to=k;state.query.toLabel=CITIES[k].n;}
+    syncSendForm();renderOffers();drawSendMap(false);
+  }});
+  if(M){
+    pinA=L.marker(ll(state.query.from),{icon:pinIcon("A"),draggable:true,zIndexOffset:1000,title:"Abholort, ziehen zum Ändern"}).addTo(M.map);
+    pinB=L.marker(ll(state.query.to),{icon:pinIcon("B","b"),draggable:true,zIndexOffset:1000,title:"Zielort, ziehen zum Ändern"}).addTo(M.map);
+    pinA.on("dragend",()=>{const p=pinA.getLatLng();state.query.from=nearestCity(p.lat,p.lng);state.query.fromLabel=CITIES[state.query.from].n;syncSendForm();renderOffers();drawSendMap(false);});
+    pinB.on("dragend",()=>{const p=pinB.getLatLng();state.query.to=nearestCity(p.lat,p.lng);state.query.toLabel=CITIES[state.query.to].n;syncSendForm();renderOffers();drawSendMap(false);});
+  }
+}
+function drawSendMap(fit){
+  const M=MAPS.sendMap;if(!M)return;
+  M.map.invalidateSize();
+  M.overlay.clearLayers();sendLayers.courier=[];
+  const q=state.query;
+  pinA.setLatLng(ll(q.from));pinB.setLatLng(ll(q.to));
+  state.offers.forEach((o,i)=>{
+    const r=o.route;
+    const nodes=routeStopsNodes(r,o.ins.stops);
+    const pl=L.polyline(routeLL(nodes),{pane:"pRoute",className:"r-courier"}).bindTooltip(`${r.name}: ${CITIES[r.from].n} → ${CITIES[r.to].n}, ${eur(o.price)}`,{sticky:true});
+    pl.on("click",()=>{const card=$(`.offer[data-idx="${i}"]`);if(card){card.scrollIntoView({behavior:"smooth",block:"center"});highlightOffer(i);}});
+    pl.on("mouseover",()=>highlightOffer(i));
+    pl.addTo(M.overlay);sendLayers.courier[i]=pl;
+  });
+  if(q.from!==q.to)L.polyline(routeLL(routeNodes([q.from,q.to])),{pane:"pRoute",className:"r-parcel",interactive:false}).addTo(M.overlay);
+  setTimeout(()=>setCityClass(M,[q.from,q.to]),0);
+  if(fit)fitLL(M,routeLL(routeNodes([q.from,q.to])),{padding:[72,72],maxZoom:8.5});
+}
+let stopLayer=null;
+function stopMarkers(stops,layer,ownShip){
+  const groups={};
+  stops.forEach((x,k)=>{(groups[x.city]=groups[x.city]||[]).push([k+1,x]);});
+  Object.entries(groups).forEach(([city,list])=>{
+    const mine=list.some(([,x])=>x.ship===ownShip||x.mine),allDrop=list.every(([,x])=>x.type==="drop");
+    const txt=list.map(([n])=>n).join(" ");
+    const w=Math.max(22,10+txt.length*7);
+    L.marker(ll(city),{icon:L.divIcon({className:"",html:`<div class="stopmk ${allDrop?"drop":""}${mine?" mine":""}" style="width:${w}px">${txt}</div>`,iconSize:[w,22],iconAnchor:[w/2,30]}),keyboard:false,zIndexOffset:500})
+      .bindTooltip(list.map(([n,x])=>`${n}. ${x.type==="pick"?"Abholen":"Abgeben"} in ${CITIES[x.city].n}${x.ship===ownShip?" (deine Sendung)":x.label?" ("+x.label+")":""}`).join("<br>")).addTo(layer);
+  });
+}
+function highlightOffer(i){
+  const M=MAPS.sendMap;
+  if(M){if(stopLayer){stopLayer.remove();stopLayer=null;}const o=state.offers[i];if(o&&i!==null){stopLayer=L.layerGroup().addTo(M.map);stopMarkers(o.ins.stops,stopLayer,"q");}}
+  sendLayers.courier.forEach((pl,j)=>{const e=pl&&pl.getElement();if(e)e.classList.toggle("hl",j===i);if(j===i&&pl)pl.bringToFront();});
+  $$(".offer").forEach(c=>c.classList.toggle("hl",+c.dataset.idx===i));
+}
+function syncSendForm(){
+  $("#s-from").value=state.query.from;$("#s-to").value=state.query.to;
+  if(sendCombo.f&&state.query.fromLabel)sendCombo.f.set(state.query.fromLabel);
+  if(sendCombo.t&&state.query.toLabel)sendCombo.t.set(state.query.toLabel);
+  const s=$(`#ssize-${state.query.size}`);if(s)s.checked=true;
+  const u=$(`#surg-${state.query.urg}`);if(u)u.checked=true;
+}
+function readSendForm(){state.query.from=$("#s-from").value;state.query.to=$("#s-to").value;state.query.size=segVal("ssize");state.query.urg=segVal("surg");}
+function stopInfo(of){
+  const r=of.route,others=new Set(of.ins.stops.filter(x=>x.ship!=="q").map(x=>x.ship)).size,parts=[];
+  if(state.query.to!==r.to)parts.push(`Abgabe unterwegs, ${esc(r.name.split(" ")[0])} fährt weiter nach ${CITIES[r.to].n}`);
+  if(others)parts.push(`${others} weitere ${others===1?"Sendung":"Sendungen"} an Bord, deine ist Stopp ${of.ins.di+1} von ${of.ins.stops.length}`);
+  return parts.length?`<div class="stopinfo">${parts.join(" · ")}</div>`:"";
+}
+function renderOffers(){
+  readSendForm();
+  const q=state.query,w=+$("#s-weight").value,maxW=SIZES[q.size].max;
+  $("#weightHint").textContent=w>maxW?`Größe ${q.size} ist bis ${maxW} kg gedacht. Wähle eine größere Größe.`:"";
+  state.offers=findOffers(q);
+  const o=[...state.offers];
+  const sorters={best:(a,b)=>b.score-a.score,fast:(a,b)=>a.eta-b.eta,reliable:(a,b)=>b.rel-a.rel,cheap:(a,b)=>a.price-b.price};
+  o.sort(sorters[state.sort]);
+  const head=$("#resultsHead");
+  if(q.from===q.to){head.innerHTML=`<h3>Abhol- und Zielort sind gleich</h3>`;$("#offers").innerHTML=`<div class="empty"><p>Wähle einen anderen Zielort, um Mitnehmer zu sehen.</p></div>`;return;}
+  head.innerHTML=`<h3 class="num">${o.length} Mitnehmer für ${CITIES[q.from].n} → ${CITIES[q.to].n}</h3><p class="small muted">Paket ${q.size}, ${URG[q.urg].n} (${URG[q.urg].d}), ca. ${Math.round(road(q.from,q.to))} km über ${pathNodes(q.from,q.to).length>2?pathNodes(q.from,q.to).slice(1,-1).map(k=>CITIES[k].n).join(", "):"die Autobahn"}</p>`;
+  if(!o.length){
+    const next=q.urg==="express"?"heute":q.urg==="heute"?"morgen":"flexibel";
+    $("#offers").innerHTML=`<div class="empty"><p><b>Gerade fährt niemand passend.</b> Mit etwas mehr Zeit finden sich oft Mitnehmer.</p>${q.urg!=="flexibel"?`<button class="btn secondary" data-urg="${next}">Mit „${URG[next].n}“ suchen</button>`:""}</div>`;
+    return;
+  }
+  $("#offers").innerHTML=o.map(of=>{
+    const r=of.route,idx=state.offers.indexOf(of),isBest=of.badges.includes("Beste Wahl");
+    return `<article class="offer${isBest?" best":""}" data-idx="${idx}">
+      ${avatarImg(r)}
+      <div>
+        <div class="name">${esc(r.name)}${r.mine?' <span class="pill grey">Deine Route</span>':""}<span class="verified"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3"/></svg>Ausweis geprüft</span></div>
+        <div class="meta num">${r.rating?String(r.rating).replace(".",",")+" von 5":"Neu"} · ${r.deliveries} Zustellungen · ${Math.round(r.punct*100)} % pünktlich</div>
+        <div class="meta">${VEH[r.veh].n} · ${CITIES[r.from].n} → ${CITIES[r.to].n} · Abholung ${when(of.pickup)} · Umweg +${of.detour} km</div>
+        ${stopInfo(of)}
+        <div class="eta num">Zustellung bis ${when(of.eta)}</div>
+        ${of.badges.length?`<div class="badges">${of.badges.map(b=>`<span class="pill${b==="Am schnellsten"?" amber":""}">${b}</span>`).join("")}</div>`:""}
+      </div>
+      <div class="right"><div class="price num">${eur(of.price)}</div><span class="small muted">Preis von ${esc(r.name.split(" ")[0])}</span><button class="btn" data-book="${idx}">Buchen</button></div>
+    </article>`;
+  }).join("");
+}
+
+/* ---------- booking ---------- */
+function meetPoint(city,which){const a=(which==="from"?$("#s-faddr"):$("#s-taddr")).value.trim();return a||CITIES[city].n;}
+function openBooking(i){
+  const of=state.offers[i];if(!of)return;
+  const q=state.query,r=of.route,fee=1.49,total=of.price+fee,winEnd=new Date(of.pickup.getTime()+15*60000);
+  $("#bookBox").innerHTML=`
+    <h3 id="bookTitle">Sendung mit ${esc(r.name)} buchen</h3>
+    <dl class="kv">
+      <dt>Abholung</dt><dd>${esc(meetPoint(q.from,"from"))}<br><span class="num">${when(of.pickup)}–${hm(winEnd)}</span></dd>
+      <dt>Zustellung</dt><dd>${esc(meetPoint(q.to,"to"))}<br><span class="num">voraussichtlich ${when(of.eta)}</span></dd>
+      <dt>Empfänger</dt><dd>${esc($("#s-rname").value||"Empfänger")}, ${esc($("#s-rphone").value||"")}</dd>
+      <dt>Sendung</dt><dd>Paket ${q.size} (${SIZES[q.size].d}), ${esc($("#s-content").value)}, ${esc($("#s-weight").value)} kg</dd>
+    </dl>
+    <table class="sum">
+      <tr><td>Fahrpreis (${of.km} km, ${URG[q.urg].n})</td><td>${eur(of.price)}</td></tr>
+      <tr><td>Servicegebühr</td><td>${eur(fee)}</td></tr>
+      <tr class="total"><td>Gesamt inkl. MwSt.</td><td>${eur(total)}</td></tr>
+    </table>
+    <fieldset style="border:0;padding:0;margin:0;display:grid;gap:8px">
+      <legend class="fieldset-title">Bezahlen mit</legend>
+      <div class="pay-list" id="payList">
+        <label><input type="radio" name="pay" value="PayPal" checked><b>PayPal</b><small>max@example.de</small></label>
+        <label><input type="radio" name="pay" value="Apple Pay"><b>Apple Pay</b><small>Wallet</small></label>
+        <label><input type="radio" name="pay" value="Google Pay"><b>Google Pay</b><small>Wallet</small></label>
+        <label><input type="radio" name="pay" value="Kreditkarte"><b>Kreditkarte</b><small>Visa •••• 4242</small></label>
+        <label><input type="radio" name="pay" value="Bar"><b>Bar</b><small>bei der Abholung</small></label>
+      </div>
+      <p class="pay-note" id="payNote">Der Betrag wird belastet und erst nach der Zustellung an den Mitnehmer ausgezahlt.</p>
+    </fieldset>
+    <label class="check"><input type="checkbox" id="okContent"> <span>Die Sendung enthält keine verbotenen Gegenstände. ${esc(r.name)} darf sie bei der Abholung ansehen.</span></label>
+    <p class="small muted">${esc(r.name.split(" ")[0])} hat 15 Minuten Zeit, die Anfrage anzunehmen. Kostenlos stornierbar bis zur Annahme.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn secondary" type="button" id="bookCancel">Abbrechen</button>
+      <button class="btn" type="button" id="bookGo" disabled>Zahlungspflichtig buchen · ${eur(total)}</button>
+    </div>`;
+  $("#bookModal").classList.add("open");
+  $("#okContent").addEventListener("change",e=>{$("#bookGo").disabled=!e.target.checked;});
+  $("#payList").addEventListener("change",()=>{const cash=segVal("pay")==="Bar";
+    $("#payNote").textContent=cash?`Du zahlst ${eur(total)} bar bei der Abholung an ${r.name.split(" ")[0]}. Die Provision verrechnen wir mit dem Guthaben des Mitnehmers.`:"Der Betrag wird belastet und erst nach der Zustellung an den Mitnehmer ausgezahlt.";
+    $("#bookGo").textContent=(cash?"Zahlungspflichtig buchen, bar zahlen · ":"Zahlungspflichtig buchen · ")+eur(total);});
+  $("#bookCancel").addEventListener("click",closeModal);
+  $("#bookGo").addEventListener("click",()=>{createBooking(of,segVal("pay"));closeModal();});
+  setTimeout(()=>$("#okContent").focus(),30);
+}
+function closeModal(){$("#bookModal").classList.remove("open");}
+$("#bookModal").addEventListener("click",e=>{if(e.target.id==="bookModal")closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+
+const STAGES=["Angefragt","Angenommen","Abgeholt","Unterwegs","Zugestellt","Ausgezahlt","Bewertet"];
+function createBooking(of,pay){
+  const q={...state.query},used=[];
+  const b={
+    id:"MP24-"+Math.floor(100000+Math.random()*900000),q,route:of.route,price:of.price,fee:1.49,total:Math.round((of.price+1.49)*100)/100,
+    payout:Math.round(of.price*0.8*100)/100,pay,km:of.km,pickup:of.pickup,eta:of.eta,travelMin:of.travelMin,
+    recipient:{name:$("#s-rname").value||"Empfänger",phone:$("#s-rphone").value||""},content:$("#s-content").value,weight:$("#s-weight").value,
+    codes:{ps:rand4(used),pc:rand4(used),dr:rand4(used),dc:rand4(used)},ok:{ps:false,pc:false,dr:false,dc:false},tries:{ps:5,pc:5,dr:5,dc:5},
+    stage:0,progress:0,simMin:0,speed:60,log:[],photo:null,deliveredAt:null,rating:{sender:null,courier:null},
+    accDeadline:new Date(Date.now()+15*60000),lastPing:Date.now(),notes:{}
+  };
+  b.nodes=routeNodes([q.from,q.to]);b.lls=routeLL(b.nodes);
+  let ins=insertShipment(of.route,q.from,q.to,b.id);
+  if(!ins){ins=of.ins;ins.stops=ins.stops.map(x=>x.ship==="q"?Object.assign({},x,{ship:b.id}):x);}
+  commitPlan(of.route,ins,b.id,"Sendung "+b.id,false);
+  b.ship=b.id;b.courierNodes=routeStopsNodes(of.route);
+  if(ins.pickup){b.pickup=ins.pickup;b.eta=ins.eta;}
+  b.pickupPoint=meetPoint(q.from,"from");b.dropPoint=meetPoint(q.to,"to");
+  addLog(b,pay==="Bar"?`Gebucht, Barzahlung von ${eur(b.total)} bei der Abholung`:`Gebucht und ${eur(b.total)} per ${pay} belastet (zurückgehalten)`);
+  addLog(b,`Anfrage an ${b.route.name} gesendet`);
+  state.bookings.unshift(b);state.current=b.id;updateNavCount();
+  toast("Buchung gesendet",` ${b.route.name} hat 15 Minuten Zeit zum Annehmen.`);
+  if(location.hash==="#auftrag")renderOrder(true);else location.hash="auftrag";
+}
+function simNow(b){return b.pickedAt?new Date(b.pickedAt.getTime()+b.simMin*60000+(b.extraMin||0)*60000):new Date();}
+function addLog(b,text){b.log.push({t:simNow(b),text});}
+const cur=()=>state.bookings.find(x=>x.id===state.current);
+function updateNavCount(){const n=state.bookings.filter(b=>b.stage<6&&!b.cancelled).length;const c=$("#navCount");c.hidden=!n;c.textContent=n;}
+
+/* ---------- ORDER ---------- */
+let orderLayers=null,orderDrawnFor=null;
+function stageClass(b,i){if(b.cancelled)return"";if(b.stage>=6)return"done";return i<b.stage?"done":i===b.stage?"now":"";}
+function renderOrder(fit){
+  const b=cur();
+  if(!b){$("#orderEmpty").innerHTML=`<div class="page-head"><h2>Meine Aufträge</h2></div><div class="empty"><p><b>Noch keine Sendung gebucht.</b> Erfasse eine Sendung und buche einen Mitnehmer, dann siehst du hier Codes, Live-Karte und Zustellung.</p><a class="btn" href="#senden">Sendung erfassen</a></div>`;$("#orderMain").hidden=true;return;}
+  $("#orderEmpty").innerHTML="";$("#orderMain").hidden=false;
+  const r=b.route;
+  const switcher=state.bookings.length>1?`<div class="order-switch" role="group" aria-label="Auftrag wählen">${state.bookings.map(x=>`<button class="btn ${x.id===b.id?"":"secondary"}" data-switch="${x.id}">${x.id} · ${CITIES[x.q.from].n} → ${CITIES[x.q.to].n}</button>`).join("")}</div>`:"";
+  const statusPill=b.cancelled?`<span class="pill red">Storniert</span>`:b.stage>=6?`<span class="pill">Abgeschlossen</span>`:b.stage===3?`<span class="pill amber pulse"><span class="dot"></span>Unterwegs</span>`:`<span class="pill amber">${STAGES[b.stage]}</span>`;
+  $("#orderHead").innerHTML=`${switcher}<div class="page-head"><div><h2>${CITIES[b.q.from].n} → ${CITIES[b.q.to].n}</h2><p class="muted num">${b.id} · Paket ${b.q.size} · ${esc(b.content)} · mit ${esc(r.name)} (${VEH[r.veh].n})</p></div>${statusPill}</div><ol class="stepper">${STAGES.map((s,i)=>`<li class="${stageClass(b,i)}">${s}</li>`).join("")}</ol>`;
+  $("#orderSide").innerHTML=`
+    <dl class="kv">
+      <dt>Abholung</dt><dd>${esc(b.pickupPoint)}<br><span class="num">${when(b.pickedAt||b.pickup)}</span></dd>
+      <dt>Übergabe</dt><dd>${esc(b.dropPoint)}<br><span class="num">${b.deliveredAt?"zugestellt "+when(b.deliveredAt):"voraussichtlich "+when(b.eta)}</span></dd>
+      <dt>Empfänger</dt><dd>${esc(b.recipient.name)}</dd>
+      <dt>Zahlung</dt><dd class="num">${eur(b.total)} ${b.pay==="Bar"?"bar bei der Abholung":"per "+esc(b.pay)}</dd>
+    </dl>
+    ${b.stage>=5&&!b.cancelled?payoutTable(b):""}
+    ${planHTML(r,b.id,`Route von ${r.name.split(" ")[0]}`)}
+    <div><h3 style="font-size:18px;margin-bottom:8px">Verlauf</h3><ul class="log">${b.log.slice().reverse().map(l=>`<li><time>${hm(l.t)}</time><span>${esc(l.text)}</span></li>`).join("")}</ul></div>
+    ${b.stage<2&&!b.cancelled?`<button class="btn danger" data-act="cancel">Sendung stornieren</button>`:""}`;
+  $("#orderPhones").innerHTML=phoneSender(b)+phoneCourier(b)+phoneRecipient(b);
+  $$("#speedCtl button").forEach(x=>x.setAttribute("aria-pressed",String(+x.dataset.speed===b.speed)));
+  drawOrderMap(b,fit);
+  paintTracking(b);
+}
+function drawOrderMap(b,fit){
+  let M=MAPS.orderMap;
+  if(!M){M=baseMap("orderMap");if(!M)return;}
+  M.map.invalidateSize();
+  if(orderDrawnFor!==b.id){
+    M.overlay.clearLayers();
+    const courierPath=L.polyline(routeLL(b.courierNodes),{pane:"pRoute",className:"r-courier",interactive:false}).addTo(M.overlay);
+    const parcel=L.polyline(b.lls,{pane:"pRoute",className:"r-parcel",interactive:false}).addTo(M.overlay);
+    const done=L.polyline([ll(b.q.from)],{pane:"pRoute",className:"r-done",interactive:false}).addTo(M.overlay);
+    stopMarkers((b.route.stops||[]).filter(x=>x.ship!==b.id),M.overlay,b.id);
+    const a=L.marker(ll(b.q.from),{icon:pinIcon("A"),keyboard:false,interactive:true,title:b.pickupPoint}).bindTooltip(`Abholung: ${b.pickupPoint}`).addTo(M.overlay);
+    const z=L.marker(ll(b.q.to),{icon:pinIcon("B","b"),keyboard:false,interactive:true,title:b.dropPoint}).bindTooltip(`Übergabe: ${b.dropPoint}`).addTo(M.overlay);
+    const courier=L.marker(ll(b.q.from),{icon:photoIcon(avatarSrc(b.route)),keyboard:false,zIndexOffset:2000}).bindTooltip(`${b.route.name} (${VEH[b.route.veh].n})`).addTo(M.overlay);
+    orderLayers={courierPath,parcel,done,a,z,courier};orderDrawnFor=b.id;fit=true;
+    setTimeout(()=>setCityClass(M,[b.q.from,b.q.to],b.nodes.slice(1,-1)),0);
+  }
+  if(fit)fitLL(M,b.lls,{padding:[60,60],maxZoom:9});
+}
+function planHTML(r,ownShip,title,newShip){
+  const stops=r.stops||[],pl=planSeq(r,stops),base=road(r.from,r.to),used=Math.max(0,pl.km-base);
+  const items=[`<li><time>${hm(r.depart)}</time><span class="mk start"></span><div><b>Start in ${CITIES[r.from].n}</b></div></li>`]
+    .concat(stops.map((x,k)=>`<li class="${x.ship===ownShip||x.mine?"mine":""}${x.ship===newShip?" new":""}"><time>${hm(pl.times[k])}</time><span class="mk ${x.type}"></span><div><b>${x.type==="pick"?"Abholen":"Abgeben"} in ${CITIES[x.city].n}</b><span>${x.ship===ownShip?"Deine Sendung":esc(x.label||"Sendung")}</span></div></li>`))
+    .concat([`<li><time>${hm(pl.end)}</time><span class="mk end"></span><div><b>Ziel ${CITIES[r.to].n}</b>${r.latest?`<span>spätestens ${hm(r.latest)}</span>`:""}</div></li>`]);
+  return `<div style="display:grid;gap:12px"><h3 style="font-size:18px">${esc(title)}</h3><div class="plan-sum"><div><b>${new Set(stops.map(x=>x.ship)).size}</b><span>Sendungen</span></div><div><b>${Math.round(used)} von ${r.detour} km</b><span>Umweg genutzt</span><div class="budget"><i style="width:${Math.min(100,used/r.detour*100||0)}%"></i></div></div><div><b>${hm(pl.end)}</b><span>Ankunft am Ziel</span></div></div><ol class="plan">${items.join("")}</ol></div>`;
+}
+function payoutTable(b){
+  const comm=b.price-b.payout;
+  if(b.pay==="Bar")return `<table class="sum" aria-label="Abrechnung"><tr><td>Bar erhalten bei der Abholung</td><td>${eur(b.total)}</td></tr><tr><td>Provision MyPack24 (20 %)</td><td>−${eur(comm)}</td></tr><tr><td>Servicegebühr</td><td>−${eur(b.fee)}</td></tr><tr class="total"><td>Verdienst von ${esc(b.route.name)}</td><td>${eur(b.payout)}</td></tr></table><p class="small muted">Provision und Servicegebühr werden mit dem Guthaben von ${esc(b.route.name.split(" ")[0])} verrechnet.</p>`;
+  return `<table class="sum" aria-label="Abrechnung"><tr><td>Fahrpreis</td><td>${eur(b.price)}</td></tr><tr><td>Provision MyPack24 (20 %)</td><td>−${eur(comm)}</td></tr><tr class="total"><td>An ${esc(b.route.name)} ausgezahlt</td><td>${eur(b.payout)}</td></tr></table><p class="small muted">Überweisung ausgelöst. Gutschrift sofort in der App, auf dem Bankkonto in 1 bis 3 Werktagen.</p>`;
+}
+function phoneShell(who,role,ini,inner,off){return `<section class="phone${off?" off":""}" aria-label="Handy ${esc(who)}"><div class="notch"></div><div class="who"><img class="avatar sm" src="${ini}" alt=""><div><b>${esc(who)}</b><span>${esc(role)}</span></div></div><div class="screen">${inner}</div></section>`;}
+function codeBlock(b,mineKey,otherKey,otherName,label){
+  const mine=`<div class="ticket"><span class="t-label">Mein ${label}code</span><span class="t-code num">${b.codes[mineKey]}</span></div>`;
+  if(b.ok[otherKey])return mine+`<p class="msg-ok"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3"/></svg>Code von ${esc(otherName)} bestätigt</p>`;
+  if(b.tries[otherKey]<=0)return mine+`<p class="msg-err">Zu viele Fehlversuche. Der Support ruft euch an.</p>`;
+  const err=b.notes[otherKey]?`<p class="msg-err">${esc(b.notes[otherKey])}</p>`:"";
+  return mine+`<label class="f" for="in-${otherKey}">Code von ${esc(otherName)} eingeben</label><div class="code-in"><input id="in-${otherKey}" inputmode="numeric" maxlength="4" autocomplete="off"><button class="btn" data-code="${otherKey}">OK</button></div>${err}`;
+}
+function ratingBlock(b,who,target){
+  const done=b.rating[who];
+  if(done)return `<p class="msg-ok">Danke, Bewertung gespeichert (${done.stars} Sterne).</p>${b.rating.sender&&b.rating.courier?`<p class="small">Beide Bewertungen sind jetzt sichtbar.</p>`:`<p class="small muted">Sichtbar, sobald beide bewertet haben.</p>`}`;
+  const tags=who==="sender"?["Pünktlich","Freundlich","Sorgfältig","Gute Kommunikation"]:["Gut verpackt","Pünktlich","Freundlich","Klare Angaben"];
+  return `<h4>${esc(target)} bewerten</h4><div class="stars" data-stars="${who}" role="group" aria-label="Sterne">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" aria-label="${n} Sterne" class="${(b["tmpStars_"+who]||0)>=n?"on":""}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" fill="currentColor"/></svg></button>`).join("")}</div><div class="chips" data-chips="${who}">${tags.map(t=>`<button type="button" aria-pressed="${(b["tmpTags_"+who]||[]).includes(t)}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}</div><button class="btn" data-rate="${who}" ${(b["tmpStars_"+who]||0)?"":"disabled"}>Bewertung senden</button>`;
+}
+function phoneSender(b){
+  const cn=b.route.name.split(" ")[0];let s="";
+  if(b.cancelled)s=`<h4>Sendung storniert</h4><p class="small">${eur(b.total)} werden auf dein Zahlungsmittel zurückerstattet.</p><a class="btn secondary" href="#senden">Neue Vorschläge ansehen</a>`;
+  else if(b.stage===0)s=`<h4>Warte auf ${esc(cn)}</h4><p class="small">Anfrage gesendet. Antwort spätestens bis <b class="num">${hm(b.accDeadline)}</b>, sonst schlagen wir dir automatisch den nächsten Mitnehmer vor.</p><span class="pill amber pulse"><span class="dot"></span>Angefragt</span>`;
+  else if(b.stage===1)s=`<h4>Abholung</h4><p class="small">${esc(b.pickupPoint)}, <span class="num">${when(b.pickup)}</span></p><p class="small muted">GPS: Du bist an der Abholadresse (28 m)</p>`+codeBlock(b,"ps","pc",cn,"Abhol");
+  else if(b.stage===2||b.stage===3)s=`<h4>${esc(cn)} ist unterwegs</h4><p class="small num" data-live="senderEta"></p><p class="small muted">Live-Standort auf der Karte. Du wirst 10 Minuten vor Ankunft benachrichtigt.</p>`;
+  else if(b.stage===4)s=`<h4>${esc(cn)} ist am Ziel</h4><p class="small">Die Übergabe an ${esc(b.recipient.name)} läuft gerade.</p>`;
+  else s=`<h4>Zugestellt ${b.deliveredAt?hm(b.deliveredAt):""}</h4><p class="small">${esc(b.recipient.name)} hat die Sendung mit Code bestätigt.</p>`+ratingBlock(b,"sender",cn);
+  return phoneShell("Du","Absender",avatarURI("Du Absender"),s,false);
+}
+function phoneCourier(b){
+  const r=b.route;let s="";
+  if(b.cancelled)s=`<h4>Auftrag storniert</h4><p class="small">Für dich entstehen keine Nachteile.</p>`;
+  else if(b.stage===0)s=`<h4>Neue Anfrage</h4><p class="small">Paket ${b.q.size} (${esc(b.content)}, ${esc(b.weight)} kg)<br>${CITIES[b.q.from].n} → ${CITIES[b.q.to].n}, Abholung <span class="num">${when(b.pickup)}</span></p><div class="price num" style="font-size:30px">${eur(b.payout)}</div><p class="small muted">für dich nach Zustellung · annehmen bis <span class="num">${hm(b.accDeadline)}</span></p><div style="display:flex;gap:8px"><button class="btn" data-act="accept">Annehmen</button><button class="btn secondary" data-act="decline">Ablehnen</button></div>`;
+  else if(b.stage===1)s=`<h4>Abholung</h4><p class="small">${esc(b.pickupPoint)}</p><p class="small muted">GPS: Du bist an der Abholadresse (31 m)</p>`+codeBlock(b,"pc","ps","Absender","Abhol")+(b.photo?`<img class="photo" src="${b.photo}" alt="Foto der Sendung">`:`<label class="f small" for="photoIn">Foto der Sendung (optional im Prototyp)<input id="photoIn" type="file" accept="image/*"></label>`);
+  else if(b.stage===2||b.stage===3)s=`<h4>Fahrt zu ${esc(b.recipient.name)}</h4><p class="small">${esc(b.dropPoint)}</p><p class="small muted num" data-live="courierPing"></p><span class="pill pulse"><span class="dot"></span>Standort wird geteilt</span>`;
+  else if(b.stage===4)s=`<h4>Übergabe am Ziel</h4><p class="small muted">GPS: Du bist an der Zieladresse (19 m)</p>`+codeBlock(b,"dc","dr",b.recipient.name.split(" ")[0],"Zustell");
+  else s=`<h4 class="num">+ ${eur(b.payout)}</h4><p class="small">Ausgezahlt auf dein Konto</p>`+ratingBlock(b,"courier","Absender");
+  return phoneShell(r.name,"Mitnehmer · "+VEH[r.veh].n,avatarSrc(r),s,false);
+}
+function phoneRecipient(b){
+  const r=b.route,rn=b.recipient.name,cn=r.name.split(" ")[0];let s="",off=false;
+  if(b.cancelled){s=`<p class="small muted">Keine Nachricht erhalten.</p>`;off=true;}
+  else if(b.stage<2){s=`<p class="small muted">Bekommt eine SMS, sobald die Sendung abgeholt ist.</p>`;off=true;}
+  else{
+    s=`<div class="sms">MyPack24: ${esc(r.name)} bringt dir eine Sendung. Live verfolgen und Code: Tracking-Link</div>`;
+    if(b.stage===2||b.stage===3)s+=`<p class="small num" data-live="recEta"></p><p class="small muted">Dein Zustellcode erscheint, sobald ${esc(cn)} angekommen ist.</p>`;
+    else if(b.stage===4)s+=`<h4>${esc(cn)} ist da</h4>`+codeBlock(b,"dr","dc",cn,"Zustell");
+    else s+=`<p class="msg-ok">Sendung erhalten ${b.deliveredAt?hm(b.deliveredAt):""}</p>`;
+  }
+  return phoneShell(rn,"Empfänger · ohne Konto",avatarURI(rn),s,off);
+}
+$("#v-auftrag").addEventListener("click",e=>{
+  const b=cur();if(!b)return;
+  const sw=e.target.closest("[data-switch]");if(sw){state.current=sw.dataset.switch;renderOrder(true);return;}
+  const sp=e.target.closest("[data-speed]");if(sp){b.speed=+sp.dataset.speed;$$("#speedCtl button").forEach(x=>x.setAttribute("aria-pressed",String(x===sp)));return;}
+  const act=e.target.closest("[data-act]");
+  if(act){
+    const a=act.dataset.act;
+    if(a==="accept"){b.stage=1;addLog(b,`${b.route.name} hat angenommen. Treffpunkt: ${b.pickupPoint}`);toast("Angenommen",` ${b.route.name} holt die Sendung ${when(b.pickup)} ab.`);}
+    if(a==="decline"){b.cancelled=true;addLog(b,`${b.route.name} hat abgelehnt. ${eur(b.total)} zurückerstattet`);toast("Abgelehnt"," Zahlung zurückerstattet. Wähle einen anderen Mitnehmer.");}
+    if(a==="cancel"){b.cancelled=true;addLog(b,`Vom Absender storniert. ${eur(b.total)} zurückerstattet`);toast("Storniert"," Der volle Betrag wird zurückerstattet.");}
+    updateNavCount();renderOrder(false);return;
+  }
+  const cb=e.target.closest("[data-code]");if(cb){checkCode(b,cb.dataset.code);return;}
+  const st=e.target.closest("[data-star]");if(st){const who=st.closest("[data-stars]").dataset.stars;b["tmpStars_"+who]=+st.dataset.star;renderOrder(false);return;}
+  const tg=e.target.closest("[data-tag]");if(tg){const who=tg.closest("[data-chips]").dataset.chips;const arr=b["tmpTags_"+who]||(b["tmpTags_"+who]=[]);const t=tg.dataset.tag,i=arr.indexOf(t);if(i>=0)arr.splice(i,1);else arr.push(t);renderOrder(false);return;}
+  const rt=e.target.closest("[data-rate]");
+  if(rt){const who=rt.dataset.rate;b.rating[who]={stars:b["tmpStars_"+who],tags:b["tmpTags_"+who]||[]};addLog(b,who==="sender"?`Du hast ${b.route.name} bewertet`:`${b.route.name} hat dich bewertet`);
+    if(b.rating.sender&&b.rating.courier){b.stage=6;addLog(b,"Beide Bewertungen veröffentlicht. Auftrag abgeschlossen");toast("Abgeschlossen"," Beide Bewertungen sind jetzt sichtbar.");updateNavCount();}
+    renderOrder(false);}
+});
+$("#v-auftrag").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".code-in input")){e.preventDefault();checkCode(cur(),e.target.id.slice(3));}});
+$("#v-auftrag").addEventListener("change",e=>{
+  if(e.target.id==="photoIn"&&e.target.files&&e.target.files[0]){const b=cur(),fr=new FileReader();fr.onload=()=>{b.photo=fr.result;addLog(b,"Foto der Sendung bei der Abholung gespeichert");renderOrder(false);};fr.readAsDataURL(e.target.files[0]);}
+});
+function checkCode(b,key){
+  const inp=$("#in-"+key);if(!inp)return;const v=inp.value.trim();
+  if(v===b.codes[key]){b.ok[key]=true;b.notes[key]="";}
+  else{b.tries[key]--;b.notes[key]=v.length!==4?"Der Code hat 4 Ziffern.":`Falscher Code. Noch ${b.tries[key]} Versuche.`;renderOrder(false);const again=$("#in-"+key);if(again)again.focus();return;}
+  if(b.stage===1&&b.ok.ps&&b.ok.pc){
+    b.stage=3;b.simMin=0;b.progress=0;b.pickedAt=b.pickup.getTime()>Date.now()?new Date(b.pickup):new Date();
+    b.eta=new Date(b.pickedAt.getTime()+b.travelMin*60000);
+    addLog(b,"Abholung mit beiden Codes und GPS bestätigt");
+    addLog(b,`Unterwegs nach ${CITIES[b.q.to].n}. ${b.recipient.name} hat eine SMS mit Tracking-Link bekommen`);
+    toast("Abgeholt"," Die Sendung ist unterwegs. Live-Standort ist aktiv.");
+  }
+  if(b.stage===4&&b.ok.dr&&b.ok.dc){
+    b.extraMin=(b.extraMin||0)+3;b.stage=5;b.deliveredAt=simNow(b);
+    addLog(b,`Zustellung an ${b.recipient.name} mit beiden Codes bestätigt`);
+    addLog(b,b.pay==="Bar"?`Barzahlung abgeschlossen, ${eur(b.price-b.payout+b.fee)} Provision und Gebühr mit dem Guthaben von ${b.route.name} verrechnet`:`${eur(b.payout)} an ${b.route.name} überwiesen (80 % des Fahrpreises)`);
+    toast("Zugestellt",` ${eur(b.payout)} wurden an ${b.route.name} ausgezahlt.`);updateNavCount();
+  }
+  renderOrder(false);const next=$(".code-in input");if(next)next.focus();
+}
+function paintTracking(b){
+  const title=$("#trkTitle");if(!title||!b)return;
+  const pos=along(b.lls,b.progress);
+  if(orderLayers&&orderDrawnFor===b.id){
+    orderLayers.courier.setLatLng(pos.pt);orderLayers.done.setLatLngs(pos.done);
+    if(b.stage===3&&$("#follow").checked&&MAPS.orderMap)MAPS.orderMap.map.panTo(pos.pt,{animate:true,duration:0.4});
+  }
+  $("#trkBar").style.width=(b.progress*100).toFixed(1)+"%";
+  const remain=Math.max(0,b.travelMin-b.simMin),simEta=new Date((b.pickedAt||b.pickup).getTime()+b.travelMin*60000);
+  let t="",e="",ping="";
+  if(b.cancelled)t="Storniert";
+  else if(b.stage<2){t=b.stage===0?"Warte auf Annahme":"Warte auf Abholung";e=`Abholung ${when(b.pickup)}`;ping="Der Live-Standort startet mit der Abholung.";}
+  else if(b.stage===3){t=`${b.route.name.split(" ")[0]} ist unterwegs`;e=`noch ${Math.ceil(remain)} min · Ankunft ca. ${hm(simEta)}`;ping=`Standort aktualisiert vor ${Math.round((Date.now()-b.lastPing)/1000)} s · ${Math.round(b.km*(1-b.progress))} km bis zum Ziel`;}
+  else if(b.stage===4){t="Am Ziel angekommen";e="Übergabe läuft";ping="Warte auf beide Zustellcodes.";}
+  else{t="Zugestellt";e=b.deliveredAt?hm(b.deliveredAt):"";ping="Live-Standort beendet und nicht mehr abrufbar.";}
+  title.textContent=t;$("#trkEta").textContent=e;$("#trkPing").textContent=ping;
+  const se=$('[data-live="senderEta"]');if(se)se.textContent=`Ankunft ca. ${hm(simEta)} · noch ${Math.ceil(remain)} min`;
+  const re=$('[data-live="recEta"]');if(re)re.textContent=`${b.route.name.split(" ")[0]} kommt ca. ${hm(simEta)} an (${b.dropPoint})`;
+  const cp=$('[data-live="courierPing"]');if(cp)cp.textContent=`Letzte Standortübertragung vor ${Math.round((Date.now()-b.lastPing)/1000)} s`;
+}
+setInterval(()=>{
+  state.bookings.forEach(b=>{
+    if(b.cancelled||b.stage!==3)return;
+    const before=b.progress;
+    b.simMin+=b.speed/60*0.5;
+    if(Date.now()-b.lastPing>=Math.max(1000,15000/b.speed))b.lastPing=Date.now();
+    b.progress=Math.min(1,b.simMin/b.travelMin);
+    if(before<0.5&&b.progress>=0.5)addLog(b,"Halbzeit erreicht");
+    const remain=b.travelMin-b.simMin;
+    if(!b.tenSent&&remain<=10&&remain>0){b.tenSent=true;addLog(b,"Noch 10 Minuten bis zur Ankunft");toast("Gleich da",` ${b.route.name.split(" ")[0]} ist in etwa 10 Minuten bei ${b.recipient.name}.`);}
+    if(b.progress>=1){b.stage=4;addLog(b,`${b.route.name} ist am Übergabeort angekommen`);toast("Angekommen",` ${b.recipient.name} und ${b.route.name.split(" ")[0]} bestätigen jetzt die Zustellcodes.`);if(b.id===state.current&&location.hash==="#auftrag")renderOrder(false);}
+  });
+  const b=cur();if(b&&location.hash==="#auftrag")paintTracking(b);
+},500);
+
+/* ---------- COURIER ---------- */
+function corridor(f,t,det){return Object.keys(CITIES).filter(k=>k!==f&&k!==t&&road(f,k)+road(k,t)-road(f,t)<=det+0.5);}
+function drawCourierMap(fit){
+  const M=MAPS.courierMap;if(!M)return;M.map.invalidateSize();M.overlay.clearLayers();
+  const r=state.preview?null:ROUTES.filter(x=>x.mine).slice(-1)[0];
+  if(r){
+    const nodes=routeStopsNodes(r);
+    L.polyline(routeLL(routeNodes([r.from,r.to])),{pane:"pRoute",className:"r-courier",interactive:false}).addTo(M.overlay);
+    L.polyline(routeLL(nodes),{pane:"pRoute",className:"r-parcel",interactive:false}).addTo(M.overlay);
+    stopMarkers(r.stops,M.overlay,null);
+    (r.reqs||[]).filter(x=>!x.accepted&&x.fits).forEach(x=>L.polyline(routeLL(routeNodes([x.a,x.b])),{pane:"pRoute",className:"r-courier",interactive:true}).bindTooltip(`Anfrage: ${CITIES[x.a].n} → ${CITIES[x.b].n}, ${eur(x.price*0.8)} für dich`,{sticky:true}).addTo(M.overlay));
+    setTimeout(()=>setCityClass(M,[r.from,r.to],corridor(r.from,r.to,r.detour)),0);
+    $("#corridorNote").textContent=`Durchgezogen: deine geplante Route mit allen Stopps. Gestrichelt: deine direkte Strecke und offene Anfragen auf dem Weg`;
+    if(fit)fitLL(M,routeLL(nodes),{padding:[50,50],maxZoom:9});
+    return;
+  }
+  const f=$("#r-from").value,t=$("#r-to").value,det=+$("#r-detour").value;
+  if(f!==t){
+    const nodes=routeNodes([f,t]);
+    L.polyline(routeLL(nodes),{pane:"pRoute",className:"r-parcel",interactive:false}).addTo(M.overlay);
+    const cor=corridor(f,t,det);
+    setTimeout(()=>setCityClass(M,[f,t],cor),0);
+    $("#corridorNote").textContent=`Ca. ${Math.round(road(f,t))} km. Blau markiert: ${cor.length} Orte, an denen du mit bis zu ${det} km Umweg Sendungen abholen oder abgeben kannst`;
+    if(fit)fitKeys(M,nodes.concat(cor),50);
+  }else{setTimeout(()=>setCityClass(M,[f]),0);$("#corridorNote").textContent="Start und Ziel sind gleich.";}
+}
+const SENDERS=["Jana","Ole","Fatma","Lukas","Greta","Can","Paula","Henrik"];
+function buildRequests(r){
+  const order=k=>road(r.from,k);
+  const pts=[r.from,...corridor(r.from,r.to,Math.max(r.detour,12)),r.to].sort((x,y)=>order(x)-order(y));
+  const pairs=[];
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){if(road(pts[i],pts[j])>=25)pairs.push([pts[i],pts[j]]);}
+  pairs.sort((x,y)=>(hashStr(x.join())%97)-(hashStr(y.join())%97));
+  return pairs.slice(0,5).map(([a,b],i)=>{const size=["S","M","S","M","L"][i];return {id:"rq"+i+Date.now(),a,b,size,name:SENDERS[(hashStr(a+b))%SENDERS.length],price:Math.max(5,Math.round(priceFor(road(a,b),size,"heute",r.pf)*100)/100)};});
+}function initCourier(){
+  cityOptions($("#r-from"),"k");cityOptions($("#r-to"),"f");
+  const rcF=addrCombo($("#rf-addr"),$("#r-from")),rcT=addrCombo($("#rt-addr"),$("#r-to"));
+  seg($("#r-veh"),"rveh",VEH,"auto");seg($("#r-space"),"rspace",SIZES,"M");
+  const toLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const d1=new Date(Date.now()+40*60000);d1.setMinutes(Math.ceil(d1.getMinutes()/5)*5,0,0);
+  const d2=new Date(d1.getTime()+150*60000);
+  $("#r-dep").value=toLocal(d1);$("#r-arr").value=toLocal(d2);
+  const sugg=()=>{const f=$("#r-from").value,t=$("#r-to").value;return f===t?0:priceFor(road(f,t),"M","morgen",1);};
+  let priceTouched=false;
+  $("#r-price").addEventListener("input",()=>{priceTouched=true;});
+  const prev=()=>{const n=$("#r-name").value.trim()||"Du";$("#pName").textContent=n;
+    const src=state.mePhoto||avatarURI("Beispiel");$("#pAvatar").src=src;$("#photoPrev").src=src;
+    $("#photoTitle").textContent=state.mePhoto?"Profilbild gespeichert":"Profilbild hinzufügen";
+    $("#r-detour-out").textContent=$("#r-detour").value+" km";
+    const sg=sugg();if(!priceTouched&&sg)$("#r-price").value=sg.toFixed(2);
+    const pv=+$("#r-price").value||0;
+    $("#r-price-hint").textContent=sg?`Vorschlag ${eur(sg)} für ca. ${Math.round(road($("#r-from").value,$("#r-to").value))} km. Du bekommst 80 %, also ${eur(pv*0.8)}. Bei Express kommt automatisch ein Zuschlag dazu.`:"";};
+  const setPhoto=src=>{state.mePhoto=src;$("#photoReq").classList.remove("missing");prev();};
+  $("#photoUp").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>setPhoto(fr.result);fr.readAsDataURL(f);});
+  $("#photoDemo").addEventListener("click",()=>setPhoto(avatarURI("Max S. Beispiel")));
+  $("#routeForm").addEventListener("input",e=>{prev();if(e.target.matches("#r-from,#r-to,#r-detour")){state.preview=true;drawCourierMap(e.target.id!=="r-detour");}});
+  prev();
+  baseMap("courierMap",{onCity:k=>{if(segVal("cmode")==="from"){$("#r-from").value=k;rcF.set(CITIES[k].n);$("#cm-to").checked=true;}else{$("#r-to").value=k;rcT.set(CITIES[k].n);}state.preview=true;drawCourierMap(true);}});
+  $("#planPanel").addEventListener("click",e=>{
+    const btn=e.target.closest("[data-accept]");if(!btn)return;
+    const r=ROUTES.filter(x=>x.mine).slice(-1)[0];const q=r.reqs.find(x=>x.id===btn.dataset.accept);if(!q)return;
+    const before=planSeq(r,r.stops);
+    const ins=insertShipment(r,q.a,q.b,q.id);
+    if(!ins){toast("Passt nicht mehr"," Diese Anfrage sprengt dein Umweg-Budget oder deine Ankunftszeit.");renderMyRoutes();return;}
+    commitPlan(r,ins,q.id,`Paket ${q.size} von ${q.name}`,true);q.accepted=true;r.earned=(r.earned||0)+q.price*0.8;r.lastNew=q.id;
+    toast("Route neu geplant",` ${CITIES[q.a].n} → ${CITIES[q.b].n} eingefügt: +${Math.round(ins.delta)} km, Ankunft ${hm(ins.plan.end)} (${Math.round((ins.plan.end-before.end)/60000)>=0?"+":""}${Math.round((ins.plan.end-before.end)/60000)} min).`);
+    renderMyRoutes();drawCourierMap(false);
+  });
+  $("#routeForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const f=$("#r-from").value,t=$("#r-to").value,dep=new Date($("#r-dep").value),arr=new Date($("#r-arr").value),veh=segVal("rveh"),err=$("#routeErr");
+    err.hidden=true;const minMin=road(f,t)/VEH[veh].speed*60;let msg="";
+    if(f===t)msg="Start und Ziel sind gleich. Wähle ein anderes Ziel.";
+    else if(isNaN(dep)||isNaN(arr))msg="Bitte Abfahrt und spätestes Ankommen ausfüllen.";
+    else if(dep.getTime()<Date.now()-5*60000)msg="Die Abfahrt liegt in der Vergangenheit.";
+    else if((arr-dep)/60000<minMin)msg=`Für ca. ${Math.round(road(f,t))} km mit ${VEH[veh].n} brauchst du etwa ${Math.round(minMin)} Minuten. Wähle eine spätere Ankunft.`;
+    else if(!state.mePhoto)msg="Bitte lade zuerst ein Profilbild hoch. Für die Demo kannst du das Beispielbild verwenden.";
+    else if(!(+$("#r-price").value>=5))msg="Bitte gib einen Preis ab 5 € ein.";
+    if(msg){err.textContent=msg;err.hidden=false;if(!state.mePhoto)$("#photoReq").classList.add("missing");return;}
+    const name=$("#r-name").value.trim()||"Du";
+    const pf=(+$("#r-price").value)/sugg();
+    ROUTES.push({id:"m"+Date.now(),name,rating:0,deliveries:0,punct:0.95,completion:0.95,veh,from:f,to:t,depart:dep,latest:arr,space:segVal("rspace"),detour:+$("#r-detour").value,pf,verified:true,mine:true,photo:state.mePhoto,price:+$("#r-price").value});
+    const nr=ROUTES[ROUTES.length-1];nr.stops=[];nr.earned=0;nr.reqs=buildRequests(nr);state.preview=false;
+    renderMyRoutes();drawCourierMap(true);toast("Route veröffentlicht",` ${CITIES[f].n} → ${CITIES[t].n} erscheint jetzt in der Suche.`);
+  });
+}
+function renderMyRoutes(){
+  const mine=ROUTES.filter(r=>r.mine);if(!mine.length)return;
+  $("#myRoutes").innerHTML=mine.map(r=>{
+    const avg=r.price*0.8;
+    return `<div class="route-item"><div><b>${CITIES[r.from].n} → ${CITIES[r.to].n}</b><div class="small muted num">${when(r.depart)} ab · spätestens ${when(r.latest)} · ${VEH[r.veh].n} · Platz ${r.space} · Umweg bis ${r.detour} km</div><div class="small">${(r.stops||[]).length/2} ${(r.stops||[]).length===2?"Sendung":"Sendungen"} geplant, Abgabe überall auf dem Weg möglich</div></div><div style="text-align:right"><div class="price num" style="font-size:22px">${eur(r.price)}</div><span class="small muted">dein Preis, Paket M<br>du bekommst ${eur(avg)}</span></div></div>`;
+  }).join("");
+  const r=mine[mine.length-1];
+  $("#pRoute").innerHTML=`Nächste Fahrt: <b>${CITIES[r.from].n} → ${CITIES[r.to].n}</b>, ${when(r.depart)}, spätestens da ${hm(r.latest)}.`;
+  // dynamic plan + requests on the way
+  const reqs=(r.reqs||[]).map(q=>{if(q.accepted)return Object.assign(q,{fits:false});const ins=insertShipment(r,q.a,q.b,q.id);const base=planSeq(r,r.stops);return Object.assign(q,{fits:!!ins,ins,dEnd:ins?Math.round((ins.plan.end-base.end)/60000):0});});
+  const open=reqs.filter(q=>!q.accepted);
+  $("#planPanel").hidden=false;
+  $("#planPanel").innerHTML=planHTML(r,null,"Dein Fahrtplan",r.lastNew)+
+    `<div style="display:grid;gap:12px;margin-top:24px"><h3 style="font-size:18px">Anfragen auf deinem Weg</h3><p class="hint">Abholen und abgeben kannst du überall auf der Strecke. Beim Annehmen plant die App deine Route neu und fügt die Stopps an der günstigsten Stelle ein.</p>
+    <div class="reqs">${open.length?open.map(q=>`<div class="req${q.fits?"":" off"}"><div><b>${CITIES[q.a].n} → ${CITIES[q.b].n}</b><div class="m num">Paket ${q.size} von ${esc(q.name)} · ${q.fits?`+${Math.round(q.ins.delta)} km · Ankunft ${q.dEnd>=0?"+":""}${q.dEnd} min`:"passt nicht mehr in dein Umweg-Budget oder deine Ankunftszeit"}</div></div><div style="display:grid;gap:6px;justify-items:end"><span class="earn">${eur(q.price*0.8)}</span>${q.fits?`<button class="btn secondary" data-accept="${q.id}" style="min-height:36px;padding:6px 14px">Annehmen</button>`:""}</div></div>`).join(""):`<p class="hint">Gerade keine weiteren Anfragen auf deinem Weg.</p>`}</div>
+    <p class="hint num">Verdient auf dieser Fahrt: <b>${eur(r.earned||0)}</b></p></div>`;
+}
+/* ---------- boot ---------- */
+preloadStops();
+initStart();initSend();initCourier();show();
+})();
+</script>
+</body>
+</html>
