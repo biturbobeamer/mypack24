@@ -1303,6 +1303,32 @@ footer.f3 .fine{margin-top:48px;font-size:13px;color:#85858B;display:flex;justif
   .mapbox .lmap,.order-map .lmap{height:320px}
 }
 @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+
+/* compact landing */
+section.block{padding:72px 0}
+section.block + section.block{padding-top:0}
+.sec-head2{margin-bottom:28px}
+.ben-band{background:#171717;color:#fff;padding:36px 0}
+:root[data-theme="dark"] .ben-band{background:#0B0B0C;border-top:1px solid #2A2A2D;border-bottom:1px solid #2A2A2D}
+.ben6{list-style:none;margin:0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:28px}
+.ben6 li{display:grid;gap:6px;align-content:start}
+.ben6 svg{width:26px;height:26px;margin-bottom:6px;color:#fff}
+.ben6 b{font-size:18px;line-height:22px;font-weight:600;letter-spacing:-.01em}
+.ben6 span{font-size:14px;line-height:20px;color:#A3A3A3}
+.pc-il{padding:12px 20px 4px}
+.parcel-il{max-height:150px}
+.parcels{gap:20px}
+.parcels-note{margin-top:20px}
+.show2{padding:36px 24px 28px;gap:16px}
+.show2-cap{min-height:64px}
+.tile{min-height:0;padding:32px;gap:14px}
+.tile ul{gap:6px}
+.faq3{max-width:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px;align-items:start}
+.faq3 details{padding:16px 0}
+@media (max-width:1100px){.ben6{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:28px}}
+@media (max-width:720px){section.block{padding:48px 0}.ben-band{padding:28px 0}.ben6{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 16px}.ben6 b{font-size:16px}.ben6 span{font-size:13px;line-height:18px}.faq3{grid-template-columns:minmax(0,1fr)}.tile{padding:24px}}
+footer.f3{padding:44px 0 28px;margin-top:0}
+footer.f3 .fine{margin-top:28px}
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171717'/%3E%3Cg fill='none' stroke='white' stroke-width='2.2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M16 6l9 4.8v10.4L16 26l-9-4.8V10.8z'/%3E%3Cpath d='M7 10.8l9 4.8 9-4.8M16 15.6V26'/%3E%3C/g%3E%3C/svg%3E">
 <script>
@@ -1354,11 +1380,22 @@ document.documentElement.setAttribute('data-theme',t);})();
     </div>
   </section>
 
+  <section class="ben-band" id="vorteile" aria-label="Vorteile">
+    <ul class="wrap ben6">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><b>Haustür zu Haustür</b><span>Schnell und direkt, ohne Paketzentrum</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><b>Dein Preis</b><span>Mitnehmer legen ihn fest, du wählst</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><path d="M3 12h18"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/></svg><b>Fährt sowieso</b><span>Freier Platz in Autos, die unterwegs sind</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.6-2.4-2.9-5.5-3"/></svg><b>Extra verdienen</b><span>80 % des Preises für den Mitnehmer</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h12v11H2z"/><path d="M14 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><b>Entlastet Paketdienste</b><span>Keine Extrafahrt für Einzelsendungen</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg><b>Zahl, wie du willst</b><span>PayPal, Apple Pay, Google Pay, Karte oder bar</span></li>
+    </ul>
+  </section>
+
   <section class="block" id="sendungen" aria-labelledby="sendungen-h">
     <div class="wrap">
       <div class="sec-head2">
         <h2 id="sendungen-h">Pakete und Briefe</h2>
-        <p>Vom Vertrag, der heute noch unterschrieben zurück muss, bis zum Paket in Rucksackgröße. Alles, was gut auf einen Rücksitz passt.</p>
+        <p>Alles, was gut auf einen Rücksitz passt.</p>
       </div>
       <ul class="parcels">
         <li class="pc">
@@ -1425,27 +1462,9 @@ document.documentElement.setAttribute('data-theme',t);})();
     </div>
   </section>
 
-  <section class="block" id="vorteile">
-    <div class="wrap benefits">
-      <div class="ben-intro">
-        <h2>Warum MyPack24</h2>
-        <p>Jeden Tag fahren viele Autos mit freiem Kofferraum von A nach B. MyPack24 macht aus diesem Platz eine schnelle Zustellung, für dich und für die Person am Steuer.</p>
-        <a class="btn" href="#senden" style="justify-self:start">Sendung erfassen</a>
-      </div>
-      <ul class="ben-list">
-        <li class="lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><h3>Schnell und direkt von Haustür zu Haustür</h3><p>Abholung bei dir, Übergabe direkt beim Empfänger, ohne Umweg über ein Paketzentrum. Oft noch am selben Tag.</p></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><h3>Du legst den Preis fest</h3><p>Mitnehmer bestimmen ihren Preis selbst. Absender sehen alle Preise vor der Buchung und wählen.</p></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><path d="M3 12h18"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/></svg><h3>Fahrten, die sowieso stattfinden</h3><p>Pendeln, Wochenendfahrt, Dienstreise: Deine Sendung nutzt freien Platz in einem Auto, das ohnehin unterwegs ist. Abgabe auch unterwegs, nicht nur am Ziel der Fahrt.</p></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h12v11H2z"/><path d="M14 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><h3>Entlastet Paketdienste und Speditionen</h3><p>Eilige Einzelsendungen brauchen keinen eigenen Transporter und keine Extrafahrt.</p></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.6-2.4-2.9-5.5-3"/></svg><h3>Verdien dir was dazu</h3><p>Nimm unterwegs eine Sendung mit und bekomm 80 % des Preises, direkt nach der Zustellung.</p></li>
-        <li class="lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg><h3>Bezahl, wie du willst</h3><p>Fünf Zahlungsarten, auch bar bei der Übergabe.</p><div class="pay-row"><span>PayPal</span><span>Apple Pay</span><span>Google Pay</span><span>Kreditkarte</span><span>Bar</span></div></li>
-      </ul>
-    </div>
-  </section>
-
   <section class="block" id="app-preview">
     <div class="wrap">
-      <div class="sec-head2"><h2>So sieht die App aus</h2><p>Vorschau der MyPack24-App für iPhone und Android, vom Startbildschirm bis zur Auszahlung</p></div>
+      <div class="sec-head2"><h2>So sieht die App aus</h2><p>Vom Startbildschirm bis zur Auszahlung, für iPhone und Android</p></div>
       <div class="show2" id="show" aria-roledescription="Diashow" aria-label="App-Vorschau">
         <div class="show2-stage">
           <button type="button" class="show2-nav" id="showPrev" aria-label="Vorheriger Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -1465,41 +1484,16 @@ document.documentElement.setAttribute('data-theme',t);})();
   </section>
 
   <section class="block">
-    <div class="wrap">
-      <div class="sec-head2"><h2>In drei Schritten verschickt</h2></div>
-      <ol class="how3">
-        <li><h3>Strecke eingeben</h3><p>Von wo nach wo, wie groß, wie dringend. Die Karte zeigt sofort, wer heute in deine Richtung fährt.</p></li>
-        <li><h3>Mitnehmer wählen</h3><p>Sortiert nach Ankunft und Bewertung. Profilbild, Preis und Abholzeit siehst du vor der Buchung.</p></li>
-        <li><h3>Live verfolgen</h3><p>Du und der Empfänger seht auf der Karte, wo die Sendung ist, bis sie an der Haustür ankommt.</p></li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="block">
     <div class="wrap tiles">
       <div class="tile dark">
         <h3>Senden</h3>
-        <p>Für alles, was heute noch ankommen soll: Schlüssel, Dokumente, Geschenke oder der Kleinanzeigen-Kauf aus der Nachbarstadt.</p>
-        <ul><li>Abholung und Zustellung an der Haustür</li><li>Fester Preis vor der Buchung</li><li>Versichert bis 100 €</li></ul>
+        <ul><li>Abholung und Zustellung an der Haustür</li><li>Geprüfte Mitnehmer mit Ausweis und Profilbild</li><li>Live-Standort bis zur Übergabe</li><li>Online-Zahlung erst nach Zustellung, versichert bis 100 €</li></ul>
         <a class="btn" href="#senden">Sendung erfassen</a>
       </div>
       <div class="tile light">
         <h3>Mitnehmen und verdienen</h3>
-        <p>Du fährst sowieso? Leg deinen Preis fest, nimm unterwegs Sendungen mit und bekomm 80 % direkt nach der Zustellung.</p>
-        <ul><li>Keine Schichten, keine Pflicht</li><li>Route, Zeit, Umweg und Preis bestimmst du</li><li>Mehrere Sendungen pro Fahrt, Abgabe unterwegs</li></ul>
+        <ul><li>Du fährst sowieso, nimm etwas mit</li><li>Route, Zeit, Umweg und Preis bestimmst du</li><li>Abgabe auch unterwegs, mehrere Sendungen pro Fahrt</li><li>80 % direkt nach der Zustellung</li></ul>
         <a class="btn" href="#mitnehmen">Route anbieten</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="block">
-    <div class="wrap">
-      <div class="sec-head2"><h2>Sicher von A nach B</h2></div>
-      <div class="trust">
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h3"/></svg><h3>Geprüfte Mitnehmer</h3><p>Ausweis, Selfie und Profilbild vor der ersten Fahrt.</p></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><h3>Live-Standort</h3><p>Von der Abholung bis zur Haustür siehst du, wo deine Sendung ist.</p></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg><h3>Geld erst nach Zustellung</h3><p>Bei Online-Zahlung geht das Geld erst nach der bestätigten Übergabe an den Mitnehmer.</p></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><h3>Versichert</h3><p>Jede Sendung bis 100 € abgesichert, auf Wunsch bis 500 € Warenwert.</p></div>
       </div>
     </div>
   </section>
@@ -1510,11 +1504,10 @@ document.documentElement.setAttribute('data-theme',t);})();
       <div class="faq3">
         <details><summary>Was darf ich verschicken?</summary><p>Briefe, Dokumente und Pakete bis 10 kg in Rucksackgröße. Verboten sind unter anderem Waffen, Drogen, verschreibungspflichtige Medikamente, Bargeld, Gefahrgut und Tiere. Der Mitnehmer darf die Sendung bei der Abholung ansehen und ablehnen.</p></details>
         <details><summary>Wer legt den Preis fest?</summary><p>Der Mitnehmer, wenn er seine Route einträgt. Die App schlägt einen fairen Preis für Strecke und Größe vor, den er übernehmen oder ändern kann. Du siehst alle Preise vor der Buchung, Köln nach Frankfurt kostet für ein Paket in Schuhkartongröße am selben Tag meist 35 bis 40 €.</p></details>
-        <details><summary>Wie kann ich bezahlen?</summary><p>Mit PayPal, Apple Pay, Google Pay, Kreditkarte oder bar. Online-Zahlungen halten wir bis zur Zustellung zurück. Bar zahlst du bei der Abholung direkt an den Mitnehmer.</p></details>
-        <details><summary>Wie gebe ich die Adresse ein?</summary><p>Einfach eintippen, zum Beispiel „Ehrenstraße 12, Köln“. Nach wenigen Buchstaben schlägt die App passende Straßen und Orte vor.</p></details>
         <details><summary>Muss die Sendung zum Ziel der Fahrt?</summary><p>Nein. Mitnehmer holen Sendungen überall auf ihrem Weg ab und geben sie unterwegs ab. Die App plant die Route mit allen Stopps und fügt neue Anfragen an der günstigsten Stelle ein, ohne dass der Umweg zu groß wird oder andere Sendungen später ankommen.</p></details>
         <details><summary>Warum brauche ich ein Profilbild?</summary><p>Damit ihr euch an der Haustür erkennt. Mitnehmer laden vor der ersten Fahrt ein Foto hoch, auf dem das Gesicht gut zu sehen ist.</p></details>
         <details><summary>Muss ich als Mitnehmer meine Einnahmen versteuern?</summary><p>Ja, Einnahmen sind grundsätzlich steuerpflichtig. Plattformen wie MyPack24 melden sie jährlich an das Bundeszentralamt für Steuern. Für Details frag deine Steuerberatung.</p></details>
+        <details><summary>Wie kann ich bezahlen?</summary><p>Mit PayPal, Apple Pay, Google Pay, Kreditkarte oder bar. Online-Zahlungen halten wir bis zur Zustellung zurück. Bar zahlst du bei der Abholung direkt an den Mitnehmer.</p></details>
       </div>
     </div>
   </section>
