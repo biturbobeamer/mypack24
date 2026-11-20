@@ -767,6 +767,44 @@ nav.main a .count[hidden]{display:none}
 .seg label[for$="-M"]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M12 5.5 18.5 9v8L12 20.5 5.5 17V9z'/%3E%3Cpath d='M5.5 9 12 12.5 18.5 9M12 12.5v8'/%3E%3C/svg%3E")}
 .seg label[for$="-L"]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M12 2.5 20.5 7v10L12 21.5 3.5 17V7z'/%3E%3Cpath d='M3.5 7 12 11.5 20.5 7M12 11.5v10'/%3E%3C/svg%3E")}
 @media (max-width:900px){.parcels{grid-template-columns:minmax(0,1fr)}.pc-il{max-width:420px}}
+
+/* slideshow v2: one piece with the phone */
+.show2{display:grid;justify-items:center;gap:20px;padding:56px 24px 44px;border-radius:24px;background:var(--soft)}
+.show2-stage{display:grid;grid-template-columns:48px auto 48px;gap:40px;align-items:center}
+.show2-nav{width:48px;height:48px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.06);transition:transform 150ms var(--ease),background-color 150ms var(--ease)}
+.show2-nav:hover{transform:scale(1.06)}
+.show2-nav:active{transform:scale(.96)}
+.show2-nav svg{width:20px;height:20px}
+.show2 .device{position:relative;width:300px;height:620px;border-radius:50px;background:#101011;padding:11px;box-shadow:inset 0 0 0 1.5px #3A3A3D,0 0 0 1px rgba(0,0,0,.18),0 40px 80px -30px rgba(0,0,0,.45),0 12px 24px -12px rgba(0,0,0,.25)}
+:root[data-theme="dark"] .show2 .device{box-shadow:inset 0 0 0 1.5px #4A4A4E,0 0 0 1px #2C2C30,0 40px 80px -30px rgba(0,0,0,.8)}
+.show2 .device-screen{border-radius:39px;transform:translateZ(0)}
+.hw{position:absolute;width:3px;background:#2A2A2D;border-radius:2px}
+.hw-a{left:-3px;top:112px;height:26px}.hw-v1{left:-3px;top:160px;height:50px}.hw-v2{left:-3px;top:220px;height:50px}.hw-p{right:-3px;top:180px;height:78px}
+.show2 .track{position:relative;display:block;height:100%;transition:none;transform:none}
+.show2 .scr{position:absolute;inset:0;visibility:hidden;background:#fff;will-change:transform}
+.show2 .scr.on,.show2 .scr.leaving{visibility:visible}
+.show2 .scr.on{z-index:2;box-shadow:-16px 0 32px rgba(0,0,0,.12)}
+.show2 .scr.leaving{z-index:1}
+.show2-foot{display:flex;align-items:center;gap:14px;width:300px}
+.show2-prog{flex:1;display:flex;gap:6px}
+.show2-prog button{all:unset;flex:1;height:20px;display:flex;align-items:center;cursor:pointer;border-radius:4px}
+.show2-prog button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.seg-t{display:block;width:100%;height:3px;border-radius:2px;background:color-mix(in srgb,var(--ink) 16%,transparent);overflow:hidden}
+.seg-t i{display:block;height:100%;background:var(--ink);transform:scaleX(0);transform-origin:left center}
+.show2-prog .done .seg-t i{transform:scaleX(1)}
+.show2-prog .cur .seg-t i{animation:segfill var(--dur,4200ms) linear forwards}
+.show2.paused .show2-prog .cur .seg-t i{animation-play-state:paused}
+@keyframes segfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.show2-play{width:32px;height:32px;flex:none;border:0;border-radius:50%;background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+.show2-play svg{width:14px;height:14px}
+.show2-cap{margin:0;min-height:72px;max-width:340px;text-align:center;display:grid;gap:2px;align-content:start}
+.show2-cap .n{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.show2-cap b{font-size:18px;font-weight:600}
+.show2-cap .d{color:var(--ink2);font-size:15px;line-height:22px}
+.show2-cap.swap{animation:capin 320ms var(--ease)}
+@keyframes capin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (max-width:720px){.show2{padding:32px 12px 28px}.show2-stage{grid-template-columns:auto}.show2-nav{display:none}}
+@media (prefers-reduced-motion:reduce){.show2-cap.swap{animation:none}}
 .theme-btn{display:inline-grid;place-items:center;width:36px;height:36px;margin-left:4px;border:0;border-radius:8px;background:transparent;color:#D4D4D4;cursor:pointer;transition:background-color 150ms var(--ease),color 150ms var(--ease)}
 .theme-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
 .theme-btn svg{width:18px;height:18px}
@@ -1408,20 +1446,20 @@ document.documentElement.setAttribute('data-theme',t);})();
   <section class="block" id="app-preview">
     <div class="wrap">
       <div class="sec-head2"><h2>So sieht die App aus</h2><p>Vorschau der MyPack24-App für iPhone und Android, vom Startbildschirm bis zur Auszahlung</p></div>
-      <div class="show" id="show">
-        <ol class="show-steps" role="tablist" aria-label="Bildschirme der App" id="showSteps"></ol>
-        <div class="show-stage">
-          <div class="device" aria-roledescription="Diashow" aria-label="App-Vorschau">
+      <div class="show2" id="show" aria-roledescription="Diashow" aria-label="App-Vorschau">
+        <div class="show2-stage">
+          <button type="button" class="show2-nav" id="showPrev" aria-label="Vorheriger Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <div class="device" id="showDevice">
+            <span class="hw hw-a" aria-hidden="true"></span><span class="hw hw-v1" aria-hidden="true"></span><span class="hw hw-v2" aria-hidden="true"></span><span class="hw hw-p" aria-hidden="true"></span>
             <div class="device-screen"><div class="island" aria-hidden="true"></div><div class="track" id="showTrack"></div></div>
           </div>
-          <p class="show-caption" id="showCaption" aria-live="polite"></p>
-          <div class="show-ctrl">
-            <button type="button" id="showPrev" aria-label="Vorheriger Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
-            <div class="dots" id="showDots" aria-hidden="true"></div>
-            <button type="button" id="showNext" aria-label="Nächster Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
-            <button type="button" id="showPlay" aria-label="Diashow anhalten"></button>
-          </div>
+          <button type="button" class="show2-nav" id="showNext" aria-label="Nächster Bildschirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
         </div>
+        <div class="show2-foot">
+          <div class="show2-prog" id="showSteps" role="tablist" aria-label="Bildschirme der App"></div>
+          <button type="button" class="show2-play" id="showPlay" aria-label="Diashow anhalten"></button>
+        </div>
+        <p class="show2-cap" id="showCaption" aria-live="off"></p>
       </div>
     </div>
   </section>
@@ -2114,37 +2152,45 @@ const SLIDES=[
 const ICON_PAUSE=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/></svg>`;
 const ICON_PLAY=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>`;
 function initShow(){
-  const track=$("#showTrack"),steps=$("#showSteps"),dots=$("#showDots");
-  track.innerHTML=SLIDES.map((s,i)=>`<div class="scr" role="group" aria-roledescription="Bildschirm" aria-label="${i+1} von ${SLIDES.length}: ${esc(s.t)}" aria-hidden="${i!==0}">${s.html}</div>`).join("");
-  steps.innerHTML=SLIDES.map((s,i)=>`<li><button type="button" role="tab" id="st-${i}" aria-selected="${i===0}" data-go="${i}"><span class="n">${i+1}</span><b>${esc(s.t)}</b><span class="d">${esc(s.d)}</span><span class="show-bar"><i></i></span></button></li>`).join("");
-  dots.innerHTML=SLIDES.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("");
-  let idx=0,playing=!window.matchMedia("(prefers-reduced-motion: reduce)").matches,hover=false,startT=Date.now();
-  const DUR=5600;
-  const go=i=>{idx=(i+SLIDES.length)%SLIDES.length;startT=Date.now();
-    track.style.transform=`translateX(-${idx*100}%)`;
-    $$(".scr",track).forEach((el,j)=>el.setAttribute("aria-hidden",String(j!==idx)));
-    $$("[role=tab]",steps).forEach((b,j)=>{b.setAttribute("aria-selected",String(j===idx));const bar=b.querySelector(".show-bar i");if(bar)bar.style.width="0";});
-    $$("i",dots).forEach((d,j)=>d.classList.toggle("on",j===idx));
-    $("#showCaption").innerHTML=`<b>${esc(SLIDES[idx].t)}</b><br><span class="muted">${esc(SLIDES[idx].d)}</span>`;
+  const root=$("#show"),track=$("#showTrack"),prog=$("#showSteps"),cap=$("#showCaption"),pb=$("#showPlay");
+  const N=SLIDES.length,DUR=4200,T=420,EASE="cubic-bezier(.32,.72,0,1)";
+  const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  root.style.setProperty("--dur",DUR+"ms");
+  track.innerHTML=SLIDES.map((s,i)=>`<div class="scr${i===0?" on":""}" role="group" aria-roledescription="Bildschirm" aria-label="${i+1} von ${N}: ${esc(s.t)}" aria-hidden="${i!==0}">${s.html}</div>`).join("");
+  prog.innerHTML=SLIDES.map((s,i)=>`<button type="button" role="tab" id="st-${i}" aria-label="${i+1} von ${N}: ${esc(s.t)}" aria-selected="${i===0}" data-go="${i}"><span class="seg-t"><i></i></span></button>`).join("");
+  const scr=$$(".scr",track),segs=$$("button",prog);
+  let idx=0,playing=!reduce,hover=false,inView=true;
+  const sync=()=>{root.classList.toggle("paused",!(playing&&!hover&&inView));cap.setAttribute("aria-live",playing?"off":"polite");};
+  const setCap=()=>{cap.classList.remove("swap");void cap.offsetWidth;cap.classList.add("swap");
+    cap.innerHTML=`<span class="n">${idx+1} / ${N}</span><b>${esc(SLIDES[idx].t)}</b><span class="d">${esc(SLIDES[idx].d)}</span>`;};
+  const mark=()=>{segs.forEach((b,j)=>{b.classList.toggle("done",j<idx);b.classList.remove("cur");b.setAttribute("aria-selected",String(j===idx));});void segs[idx].offsetWidth;segs[idx].classList.add("cur");};
+  const go=(i,dir)=>{
+    const n=((i%N)+N)%N;if(n===idx)return;
+    dir=dir||(n>idx?1:-1);
+    const out=scr[idx],inn=scr[n];
+    scr.forEach(el=>{el.getAnimations().forEach(a=>a.cancel());if(el!==out)el.classList.remove("leaving");});
+    out.classList.remove("on");out.classList.add("leaving");out.setAttribute("aria-hidden","true");
+    inn.classList.add("on");inn.setAttribute("aria-hidden","false");
+    const d=reduce?1:T;
+    inn.animate([{transform:`translate3d(${dir*100}%,0,0)`},{transform:"translate3d(0,0,0)"}],{duration:d,easing:EASE});
+    const a=out.animate([{transform:"translate3d(0,0,0)",opacity:1},{transform:`translate3d(${-dir*30}%,0,0)`,opacity:.55}],{duration:d,easing:EASE});
+    a.onfinish=()=>{if(!out.classList.contains("on"))out.classList.remove("leaving");};
+    idx=n;mark();setCap();
   };
-  steps.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(+b.dataset.go);});
-  steps.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowRight"){e.preventDefault();go(idx+1);$("#st-"+idx).focus();}if(e.key==="ArrowUp"||e.key==="ArrowLeft"){e.preventDefault();go(idx-1);$("#st-"+idx).focus();}});
-  $("#showPrev").addEventListener("click",()=>go(idx-1));
-  $("#showNext").addEventListener("click",()=>go(idx+1));
-  const pb=$("#showPlay");
-  const setPlay=p=>{playing=p;pb.innerHTML=p?ICON_PAUSE:ICON_PLAY;pb.setAttribute("aria-label",p?"Diashow anhalten":"Diashow abspielen");startT=Date.now();};
-  pb.addEventListener("click",()=>setPlay(!playing));setPlay(playing);
-  const show=$("#show");show.addEventListener("mouseenter",()=>hover=true);show.addEventListener("mouseleave",()=>{hover=false;startT=Date.now();});
-  let sx=null;const dev=$(".device");
-  dev.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;},{passive:true});
-  dev.addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)go(idx+(dx<0?1:-1));sx=null;});
-  setInterval(()=>{
-    const bar=$(`#st-${idx} .show-bar i`);
-    if(!playing||hover||!$("#v-start").classList.contains("active")){startT=Date.now()-((bar&&parseFloat(bar.style.width)||0)/100*DUR);return;}
-    const p=Math.min(1,(Date.now()-startT)/DUR);if(bar)bar.style.width=(p*100)+"%";
-    if(p>=1)go(idx+1);
-  },100);
-  go(0);
+  prog.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(+b.dataset.go);});
+  prog.addEventListener("animationend",e=>{if(e.target.closest(".cur"))go(idx+1,1);});
+  $("#showPrev").addEventListener("click",()=>go(idx-1,-1));
+  $("#showNext").addEventListener("click",()=>go(idx+1,1));
+  root.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){e.preventDefault();go(idx+1,1);}if(e.key==="ArrowLeft"){e.preventDefault();go(idx-1,-1);}});
+  const setPlay=p=>{playing=p;pb.innerHTML=p?ICON_PAUSE:ICON_PLAY;pb.setAttribute("aria-label",p?"Diashow anhalten":"Diashow abspielen");sync();};
+  pb.addEventListener("click",()=>setPlay(!playing));
+  const dev=$("#showDevice");
+  dev.addEventListener("mouseenter",()=>{hover=true;sync();});dev.addEventListener("mouseleave",()=>{hover=false;sync();});
+  let sx=null,sy=null;
+  dev.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;hover=true;sync();},{passive:true});
+  dev.addEventListener("touchend",e=>{hover=false;sync();if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>36&&Math.abs(dx)>Math.abs(dy))go(idx+(dx<0?1:-1),dx<0?1:-1);sx=null;});
+  if("IntersectionObserver" in window)new IntersectionObserver(es=>{inView=es[0].isIntersecting;sync();},{threshold:.35}).observe(root);
+  segs[0].classList.add("cur");setCap();setPlay(playing);
 }
 
 /* ---------- SEND ---------- */
